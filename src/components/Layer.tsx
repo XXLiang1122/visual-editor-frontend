@@ -1,22 +1,21 @@
-import React, { MouseEvent as MouseEventType, useContext, useEffect, useState } from "react";
+import React, { MouseEvent as MouseEventType, useContext, useState } from "react";
 import { createPortal } from "react-dom";
 import styled from "@emotion/styled";
-import { Layer as LayerType, TemplateInfo } from 'types';
-import { ScaleContext, LayersContext, BackgroundContext, TemplateContext } from 'store/context';
+import { Layer as LayerType } from 'types';
+import { ScaleContext, BackgroundContext } from 'store/context';
 import { MouseEvents } from 'utils/mouseEvent';
 import { helpLine } from 'utils/helpLine'
 import Border from "./Border";
+import { templateStore } from 'store/template';
+import { observer } from 'mobx-react';
+import { cloneDeep } from "lodash";
 
 // 图层
-export default function Layer ({ children, info }: { children: JSX.Element, info: LayerType }) {
+const Layer = observer(({ children, info }: { children: JSX.Element, info: LayerType }) => {
   const scale = useContext(ScaleContext)
-  const { template } = useContext<{ template: TemplateInfo; }>(TemplateContext)
+  const { template } = templateStore
 
-  // 图层state
-  const { layers, setLayers } = useContext<{
-    layers: LayerType[],
-    setLayers: React.Dispatch<React.SetStateAction<LayerType[]>>
-  }>(LayersContext)
+  const { layers, setLayer, resetEditStatus } = templateStore
 
   // 设置背景选中状态
   const { setIsSelectedBackground} = useContext(BackgroundContext)
@@ -29,8 +28,7 @@ export default function Layer ({ children, info }: { children: JSX.Element, info
 
   // 更新图层位置
   const updatePosition = ({ diff }: { diff: { x: number; y: number; } }) => {
-    const idx = layers.findIndex(layer => info.id === layer.id)
-    const layer = layers[idx]
+    const layer = cloneDeep(info)
 
     const newPosition = helpLinePipe({
       x: helpLineRect().x + diff.x / scale,
@@ -38,9 +36,9 @@ export default function Layer ({ children, info }: { children: JSX.Element, info
     })
 
     layer.position = newPosition
-    layers.splice(idx, 1, layer)
-    setLayers([...layers])
+    layer.isEditing = true
 
+    setLayer(layer)
     setIsMoving(true)
   }
 
@@ -56,11 +54,10 @@ export default function Layer ({ children, info }: { children: JSX.Element, info
   // 选中图层
   const onSelectLayer = (e: MouseEventType<HTMLDivElement>) => {
     e.stopPropagation()
-    const _layers = layers.map(layer => {
-      layer.isEditing = info.id === layer.id
-      return layer
-    })
-    setLayers(_layers)
+    resetEditStatus()
+    const layer = cloneDeep(info)
+    layer.isEditing = true
+    setLayer(layer)
     setIsSelectedBackground(false)
     // 初始化拖拽事件
     new MouseEvents(e, updatePosition, hideLine)
@@ -87,7 +84,9 @@ export default function Layer ({ children, info }: { children: JSX.Element, info
       <Border info={info} isMoving={isMoving} setIsMoving={setIsMoving} />
     </RenderBorder>}
   </LayerWrapper>
-}
+})
+
+export default Layer
 
 // 传送门
 function RenderBorder ({ children }: { children: JSX.Element }) {

@@ -1,8 +1,11 @@
-import React, { useContext, useState, MouseEvent } from "react";
+import React, { useContext, MouseEvent } from "react";
 import styled from "@emotion/styled";
-import { TemplateContext, ScaleContext, LayersContext, BackgroundContext } from 'store/context';
+import { ScaleContext, BackgroundContext } from 'store/context';
 import Layer from './Layer';
-import { TemplateInfo, FontStyle } from 'types';
+import { FontStyle } from 'types';
+import { templateStore } from 'store/template';
+import { observer } from 'mobx-react';
+import { toJS } from 'mobx';
 
 interface Props {
   width: number;
@@ -11,13 +14,11 @@ interface Props {
 }
 
 // 画布
-export default function Canvas ({ cancelSelectLayers }: { cancelSelectLayers: () => void }) {
-  const { template } = useContext<{ template: TemplateInfo; }>(TemplateContext)
-  const scale = useContext(ScaleContext)
-
+export default observer(() => {
+  const { template, resetEditStatus } = templateStore
   const { global, background } = template
-  const [layers, setLayers] = useState(template.layers)
 
+  const scale = useContext(ScaleContext)
   const {isSelectedBackground, setIsSelectedBackground} = useContext<{
     isSelectedBackground: boolean;
     setIsSelectedBackground: React.Dispatch<React.SetStateAction<boolean>>
@@ -27,31 +28,29 @@ export default function Canvas ({ cancelSelectLayers }: { cancelSelectLayers: ()
   const selectBackground = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
     setIsSelectedBackground(true)
-    cancelSelectLayers()
+    resetEditStatus()
   }
 
   return <Wrapper width={global.width} height={global.height} scale={scale}>
     <CanvasContent width={global.width} height={global.height} scale={scale}>
       <Background color={background.color} onClick={selectBackground} />
-      <LayersContext.Provider value={{layers, setLayers}}>
-        {
-          layers.map(layer => {
-            // 图片
-            if (layer.type === 'image') {
-              return <Layer key={layer.id} info={layer}>
-                <Image src={layer.source.imageUrl} draggable="false" />
-              </Layer>
-            }
-            // 文字
-            if (layer.type === 'text') {
-              return <Layer key={layer.id} info={layer}>
-                <Text key={layer.id} style={layer.style as FontStyle}>{layer.source.content}</Text>
-              </Layer>
-            }
-            return <></>
-          })
-        }
-      </LayersContext.Provider>
+      {
+        template.layers.map(layer => {
+          // 图片
+          if (layer.type === 'image') {
+            return <Layer key={layer.id} info={layer}>
+              <Image src={toJS(layer.source.imageUrl)} draggable="false" />
+            </Layer>
+          }
+          // 文字
+          if (layer.type === 'text') {
+            return <Layer key={layer.id} info={layer}>
+              <Text style={toJS(layer.style as FontStyle)}>{layer.source.content}</Text>
+            </Layer>
+          }
+          return <></>
+        })
+      }
     </CanvasContent>
     {/* 编辑框传送点 */}
     <LayerControl id="layerControl" width={global.width} height={global.height} scale={scale}>
@@ -62,7 +61,7 @@ export default function Canvas ({ cancelSelectLayers }: { cancelSelectLayers: ()
         <HLine id="horizontalLine" />
     </LayerControl>
   </Wrapper>
-}
+})
 
 const Image = styled.img`
   width: 100%;

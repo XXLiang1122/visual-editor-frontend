@@ -1,11 +1,12 @@
 import { Layer } from 'types';
 import { MouseEvent, useContext, useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
-import { ScaleContext, LayersContext } from 'store/context';
-import { Layer as LayerType } from 'types';
+import { ScaleContext } from 'store/context';
 import { MouseEvents } from 'utils/mouseEvent';
-import { getCenterCoords, calcRotatedCoords } from 'utils'
+import { getCenterCoords, calcRotatedCoords } from 'utils';
 import rotateIcon from 'assets/rotate.svg';
+import { templateStore } from 'store/template';
+import { cloneDeep } from 'lodash';
 
 enum POINT_TYPE {
   TL = 'topLeft',
@@ -46,10 +47,8 @@ const ANGLE_TO_CURSOR = [
 // 编辑框
 export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; isMoving: boolean; setIsMoving: any }) {
   const scale = useContext(ScaleContext)
-  const { layers, setLayers } = useContext<{
-    layers: LayerType[],
-    setLayers: React.Dispatch<React.SetStateAction<LayerType[]>>
-  }>(LayersContext)
+
+  const { layers, setLayer } = templateStore
 
   // 鼠标样式
   const [cursors, setCursors] = useState<string[]>([])
@@ -57,7 +56,7 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
   // 调整大小 无旋转
   const resizeNormal = (e: MouseEvent<HTMLElement>, point: POINT_TYPE) => {
     const idx = layers.findIndex(layer => layer.id === info.id)
-    const layer = layers[idx]
+    const layer = cloneDeep(layers[idx])
 
     if (idx > -1) {
       new MouseEvents(e, (payload) => {
@@ -119,9 +118,7 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
           layer.position.y = newY
         }
 
-        layers.splice(idx, 1, layer)
-        setLayers([...layers])
-
+        setLayer(layer)
         setIsMoving(true)
       }, () => {
         setIsMoving(false)
@@ -153,7 +150,7 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
 
     const whRatio = info.width / info.height
     const idx = layers.findIndex(layer => layer.id === info.id)
-    const layer = layers[idx]
+    const layer = cloneDeep(layers[idx])
 
     new MouseEvents(e, ({ curCoords }: { curCoords: Coords }) => {
       const curPoint = {
@@ -394,9 +391,8 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
           break
         }
       }
-      layers.splice(idx, 1, layer)
-      setLayers([...layers])
 
+      setLayer(layer)
       setIsMoving(true)
     }, () => {
       setIsMoving(false)
@@ -430,11 +426,10 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
         const angle = Math.atan2(offsetY, offsetX) * 180 / Math.PI
 
         const idx = layers.findIndex(layer => layer.id === info.id)
-        const layer = layers[idx]
+        const layer = cloneDeep(layers[idx])
         layer.rotate = (angle - 90 + 360) % 360
-        layers.splice(idx, 1, layer)
-        setLayers([...layers])
 
+        setLayer(layer)
         setIsMoving(true)
       }, () => {
         setIsMoving(false)
