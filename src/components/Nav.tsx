@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 
 export default function Nav () {
   return <Header>
-    <Img />
+    <Img src="/logo.webp" />
   </Header>
 }
 
@@ -16,7 +16,7 @@ const Header = styled.header`
 `
 
 const Img = styled.img`
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
 `

@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import Sidebar from "./Sidebar";
+import Sidebar from "./side-bar/Sidebar";
 import Editor from "./Editor";
 
 export default function Main () {

@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect, useRef, useState } from "react";
+import React, { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import styled from "@emotion/styled";
 import Footer from "./Footer";
 import Canvas from "./Canvas";
@@ -13,7 +13,7 @@ export default observer(() => {
   // 画布父级容器dom ref
   const canvasWrapperRef = useRef<HTMLDivElement>(null)
   // 获取模板数据
-  const { template, resetEditStatus } = templateStore
+  const { template, resetEditStatus, removeLayer } = templateStore
 
   // 是否选中背景
   const [isSelectedBackground, setIsSelectedBackground] = useState(false)
@@ -32,6 +32,24 @@ export default observer(() => {
     }
     setScale(scale)
   }, [template.global.width, template.global.height])
+
+  // 删除图层
+  const onDeleteListener = useCallback((e: KeyboardEvent) => {
+    // 页面失焦时才能删除
+    if (document.activeElement === document.body || document.activeElement === null) {
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        const layer = template.layers.find(layer => layer.isEditing)
+        if (layer) {
+          removeLayer(layer.id)
+        }
+      }
+    }
+  }, [removeLayer, template.layers])
+
+  useEffect(() => {
+    document.addEventListener('keydown', onDeleteListener)
+    return () => { document.removeEventListener('keydown', onDeleteListener) }
+  }, [onDeleteListener])
 
   // 取消所有图层的选中状态包括背景
   const resetStatus = (e: MouseEvent<HTMLElement>) => {
