@@ -4,7 +4,7 @@ import { templateStore } from 'store/template';
 import { Layer } from 'types'
 
 export default function ImageItem ({ image }: { image: ImageInfo }) {
-  const { template, layers, addLayer, resetEditStatus } = templateStore
+  const { template, layers, addLayer, selectLayer, resetSelectStatus } = templateStore
 
   // 使用图片
   const onUseImage = () => {
@@ -22,9 +22,11 @@ export default function ImageItem ({ image }: { image: ImageInfo }) {
         imageUrl: image.webformatURL
       },
       zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
-      isEditing: true
+      isSelected: true,
+      isEditing: false,
+      scale: 1
     }
-    resetEditStatus()
+    resetSelectStatus()
     addLayer(newLayer)
   }
 

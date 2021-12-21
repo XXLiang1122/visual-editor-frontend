@@ -25,7 +25,9 @@ export interface Layer {
   };
   style?: FontStyle;
   zIndex: number;
+  isSelected?: boolean;
   isEditing?: boolean;
+  scale?: number;
 }
 
 export interface FontStyle {

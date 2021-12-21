@@ -1,7 +1,7 @@
 import { Layer } from 'types';
 import { MouseEvent, useContext, useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
-import { ScaleContext } from 'store/context';
+import { ScaleContext, MovingContext } from 'store/context';
 import { MouseEvents } from 'utils/mouseEvent';
 import { getCenterCoords, calcRotatedCoords } from 'utils';
 import rotateIcon from 'assets/rotate.svg';
@@ -45,9 +45,9 @@ const ANGLE_TO_CURSOR = [
 ]
 
 // 编辑框
-export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; isMoving: boolean; setIsMoving: any }) {
+export default function Border ({ info }: { info: Layer; }) {
   const scale = useContext(ScaleContext)
-
+  const { isMoving, setIsMoving } = useContext(MovingContext)
   const { layers, setLayer } = templateStore
 
   // 鼠标样式
@@ -56,10 +56,12 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
   // 调整大小 无旋转
   const resizeNormal = (e: MouseEvent<HTMLElement>, point: POINT_TYPE) => {
     const idx = layers.findIndex(layer => layer.id === info.id)
-    const layer = cloneDeep(layers[idx])
+    // const layer = cloneDeep(layers[idx])
 
     if (idx > -1) {
       new MouseEvents(e, (payload) => {
+        const layer = cloneDeep(layers[idx])
+
         const { x, y } = payload.diff
         const whRatio = layer.width / layer.height
         let { x: newX, y: newY } = layer.position
@@ -112,6 +114,12 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
         }
 
         if ((newWidth > MIN_SIZE.width && newHeight > MIN_SIZE.height) || newWidth > layer.width || newHeight > layer.height) {
+          if (layer.type === 'text') {
+            if (layer.height !== newHeight && layer.scale) {
+              layer.scale *= newHeight / layer.height
+            }
+          }
+
           layer.width = newWidth
           layer.height = newHeight
           layer.position.x = newX
@@ -150,13 +158,17 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
 
     const whRatio = info.width / info.height
     const idx = layers.findIndex(layer => layer.id === info.id)
-    const layer = cloneDeep(layers[idx])
+    // const layer = cloneDeep(layers[idx])
 
     new MouseEvents(e, ({ curCoords }: { curCoords: Coords }) => {
+      const layer = cloneDeep(layers[idx])
+
       const curPoint = {
         x: curCoords.x - Number(canvasRect.left),
         y: curCoords.y - Number(canvasRect.top)
       }
+
+      const oldHeight = layer.height
 
       switch (point) {
         case POINT_TYPE.TL: {
@@ -389,6 +401,12 @@ export default function Border ({ info, isMoving, setIsMoving }: { info: Layer; 
             layer.position.x = (newCenter.x - (newWidth / 2)) / scale
           }
           break
+        }
+      }
+
+      if (layer.type === 'text') {
+        if (layer.height !== oldHeight && layer.scale) {
+          layer.scale *= layer.height / oldHeight
         }
       }
 

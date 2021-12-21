@@ -2,7 +2,7 @@ import React, { MouseEvent as MouseEventType, useContext, useState } from "react
 import { createPortal } from "react-dom";
 import styled from "@emotion/styled";
 import { Layer as LayerType } from 'types';
-import { ScaleContext, BackgroundContext } from 'store/context';
+import { ScaleContext, BackgroundContext, MovingContext } from 'store/context';
 import { MouseEvents } from 'utils/mouseEvent';
 import { helpLine } from 'utils/helpLine'
 import Border from "./Border";
@@ -11,14 +11,14 @@ import { observer } from 'mobx-react';
 import { cloneDeep } from "lodash";
 
 // 图层
-const Layer = observer(({ children, info }: { children: JSX.Element, info: LayerType }) => {
+export default observer(({ children, info }: { children: JSX.Element, info: LayerType }) => {
   const scale = useContext(ScaleContext)
   const { template } = templateStore
 
-  const { layers, setLayer, resetEditStatus } = templateStore
+  const { layers, setLayer, selectLayer } = templateStore
 
   // 设置背景选中状态
-  const { setIsSelectedBackground} = useContext(BackgroundContext)
+  const { setIsSelectedBackground } = useContext(BackgroundContext)
 
   // 是否正在拖拽图层
   const [isMoving, setIsMoving] = useState(false)
@@ -36,7 +36,6 @@ const Layer = observer(({ children, info }: { children: JSX.Element, info: Layer
     })
 
     layer.position = newPosition
-    layer.isEditing = true
 
     setLayer(layer)
     setIsMoving(true)
@@ -54,10 +53,8 @@ const Layer = observer(({ children, info }: { children: JSX.Element, info: Layer
   // 选中图层
   const onSelectLayer = (e: MouseEventType<HTMLDivElement>) => {
     e.stopPropagation()
-    resetEditStatus()
-    const layer = cloneDeep(info)
-    layer.isEditing = true
-    setLayer(layer)
+    if (info.isEditing) return
+    selectLayer(info.id)
     setIsSelectedBackground(false)
     // 初始化拖拽事件
     new MouseEvents(e, updatePosition, hideLine)
@@ -78,18 +75,19 @@ const Layer = observer(({ children, info }: { children: JSX.Element, info: Layer
       zIndex: info.zIndex
     }}
     onMouseDown={onSelectLayer}
+    className={[isMoving ? 'moving' : '', info.isEditing ? 'edit' : ''].join(' ')}
   >
-    { children }
-    {info.isEditing && <RenderBorder>
-      <Border info={info} isMoving={isMoving} setIsMoving={setIsMoving} />
-    </RenderBorder>}
+    <MovingContext.Provider value={{ isMoving, setIsMoving }}>
+      { children }
+      {info.isSelected && <TransportBorder>
+        <Border info={info} />
+      </TransportBorder>}
+    </MovingContext.Provider>
   </LayerWrapper>
 })
 
-export default Layer
-
 // 传送门
-function RenderBorder ({ children }: { children: JSX.Element }) {
+function TransportBorder ({ children }: { children: JSX.Element }) {
   return createPortal(
     children,
     document.querySelector('#layerControl') as HTMLDivElement
@@ -100,4 +98,15 @@ const LayerWrapper = styled.div`
   position: absolute;
   top: 0;
   left: 0;
+  pointer-events: auto;
+  user-select: none;
+  cursor: default;
+
+  &.moving {
+    cursor: all-scroll;
+  }
+
+  &.edit {
+    cursor: text;
+  }
 `

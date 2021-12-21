@@ -3,7 +3,7 @@ import { Layer } from 'types'
 import { Button } from 'antd'
 
 export default function TextItem () {
-  const { template, layers, addLayer, resetEditStatus } = templateStore
+  const { template, layers, addLayer, resetSelectStatus, editTextLayer } = templateStore
 
   // 新增文本
   const onUseImage = () => {
@@ -28,10 +28,13 @@ export default function TextItem () {
         textAlign: 'left'
       },
       zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
-      isEditing: true
+      isSelected: true,
+      isEditing: true,
+      scale: 1
     }
-    resetEditStatus()
+    resetSelectStatus()
     addLayer(newLayer)
+    editTextLayer(newLayer.id)
   }
 
   return <Button size="large" style={{ width: '100%' }} onClick={onUseImage}>

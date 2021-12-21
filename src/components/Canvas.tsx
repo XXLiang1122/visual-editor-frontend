@@ -1,11 +1,12 @@
 import React, { useContext, MouseEvent } from "react";
 import styled from "@emotion/styled";
 import { ScaleContext, BackgroundContext } from 'store/context';
-import Layer from './Layer';
-import { FontStyle } from 'types';
+import Layer from './layer/Layer';
 import { templateStore } from 'store/template';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
+import TextEditor from './layer/TextEditor';
+import { createPortal } from "react-dom";
 
 interface Props {
   width: number;
@@ -15,7 +16,7 @@ interface Props {
 
 // 画布
 export default observer(() => {
-  const { template, resetEditStatus } = templateStore
+  const { template, resetSelectStatus } = templateStore
   const { global, background } = template
 
   const scale = useContext(ScaleContext)
@@ -28,7 +29,7 @@ export default observer(() => {
   const selectBackground = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
     setIsSelectedBackground(true)
-    resetEditStatus()
+    resetSelectStatus()
   }
 
   return <Wrapper width={global.width} height={global.height} scale={scale}>
@@ -44,8 +45,15 @@ export default observer(() => {
           }
           // 文字
           if (layer.type === 'text') {
-            return <Layer key={layer.id} info={layer}>
-              <Text style={toJS(layer.style as FontStyle)}>{layer.source.content}</Text>
+            return layer.isEditing ?
+            <TransportEditor key={layer.id}>
+              <Layer info={layer}>
+                <TextEditor layer={toJS(layer)} />
+              </Layer>
+            </TransportEditor>
+            :
+            <Layer key={layer.id} info={layer}>
+              <TextEditor layer={toJS(layer)} />
             </Layer>
           }
           return <></>
@@ -60,24 +68,23 @@ export default observer(() => {
         {/* 水平辅助线 */}
         <HLine id="horizontalLine" />
     </LayerControl>
+    {/* 点前编辑的文本传送点 */}
+    <TextControl id="textControl" width={global.width} height={global.height} scale={scale} />
   </Wrapper>
 })
+
+// 传送门
+function TransportEditor ({ children }: { children: JSX.Element }) {
+  return createPortal(
+    children,
+    document.querySelector('#textControl') as HTMLDivElement
+  )
+}
 
 const Image = styled.img`
   width: 100%;
   height: 100%;
 `
-
-const Text = styled.div<{style: FontStyle}>(
-  {},
-  props => ({
-    fontFamily: props.style.font,
-    fontSize: props.style.fontSize,
-    color: props.style.color,
-    lineHeight: props.style.lineHeight,
-    textAlign: props.style.textAlign
-  })
-)
 
 const Background = styled.div<{ color: string; }>(
   {
@@ -123,12 +130,22 @@ const CanvasContent = styled.div<Props>(
   })
 )
 
+const TextControl = styled(CanvasContent)`
+  position: absolute;
+  top: 50;
+  left: 50;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+  background-color: transparent;
+`
+
 const LayerControl = styled.div<Props>(
   {
     position: 'absolute',
     top: 50,
     left: 50,
-    zIndex: 1,
+    zIndex: 2,
     pointerEvents: 'none'
   },
   props => ({

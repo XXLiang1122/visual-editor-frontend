@@ -13,7 +13,7 @@ export default observer(() => {
   // 画布父级容器dom ref
   const canvasWrapperRef = useRef<HTMLDivElement>(null)
   // 获取模板数据
-  const { template, resetEditStatus, removeLayer } = templateStore
+  const { template, resetSelectStatus, removeLayer } = templateStore
 
   // 是否选中背景
   const [isSelectedBackground, setIsSelectedBackground] = useState(false)
@@ -38,7 +38,7 @@ export default observer(() => {
     // 页面失焦时才能删除
     if (document.activeElement === document.body || document.activeElement === null) {
       if (e.key === 'Backspace' || e.key === 'Delete') {
-        const layer = template.layers.find(layer => layer.isEditing)
+        const layer = template.layers.find(layer => layer.isSelected)
         if (layer) {
           removeLayer(layer.id)
         }
@@ -55,7 +55,7 @@ export default observer(() => {
   const resetStatus = (e: MouseEvent<HTMLElement>) => {
     // self
     if ((e.target as HTMLElement).id === 'CanvasWrapper') {
-      resetEditStatus()
+      resetSelectStatus()
       setIsSelectedBackground(false)
     }
   }

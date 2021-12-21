@@ -173,7 +173,7 @@ export function helpLine () {
   // 渲染辅助线DOM
   const renderLine = (res: Coord) => {
     if (vLineEl && hLineEl) {
-      // todo: 当前位置刚好在线上，条件不满足
+      // TODO: 当前位置刚好在线上，条件不满足
       if (res.x !== rect.x) {
         let vLine = 0
         if (vType === 0) vLine = res.x + (rect.width - realRect.width) / 2
