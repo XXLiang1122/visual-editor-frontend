@@ -1,5 +1,6 @@
 import 'quill/dist/quill.core.css';
 import 'quill/dist/quill.snow.css';
+import Quill from 'quill';
 import { observer } from 'mobx-react';
 import styled from "@emotion/styled";
 import { FontStyle } from 'types';
