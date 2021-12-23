@@ -46,7 +46,9 @@ export const defaultTemplate: TemplateInfo = {
         fontSize: 60,
         lineHeight: 1.2,
         color: '#000',
-        textAlign: 'left'
+        textAlign: 'left',
+        fontWeight: 400,
+        underline: false
       },
       zIndex: 2
     }

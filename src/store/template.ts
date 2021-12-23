@@ -4,7 +4,7 @@ import { TemplateInfo, Layer, LAYER_TYPE } from 'types'
 import { cloneDeep } from 'lodash'
 
 let template: TemplateInfo = Object.assign(defaultTemplate, {
-  layers: defaultTemplate.layers.map(layer => { return {...layer, isSelected: false, isEditing: false, scale: 1} })
+  layers: defaultTemplate.layers.map(layer => { return {...layer, isSelected: false, isEditing: false, isHover: false, scale: 1} })
 })
 
 const localTemplateCache = localStorage.getItem('TEMPLATE')
@@ -20,6 +20,8 @@ export const templateStore = observable({
   layerType: LAYER_TYPE.EMPTY,
   // 是否需要重新计算图层的高度，比如改变字体大小时需要
   needUpdateLayerHeight: false,
+  // 图层是否正在移动
+  isMoving: false,
 
   get layers (): Layer[] {
     return this.template.layers
@@ -73,6 +75,15 @@ export const templateStore = observable({
     const idx = this.layers.findIndex(l => l.id === id)
     if (idx > -1) {
       this.layers.splice(idx, 1)
+      this.setLayerType(LAYER_TYPE.EMPTY)
+    }
+  },
+
+  // 设置图层层级
+  setLayerLevel (id: string, level: number) {
+    const idx = this.layers.findIndex(l => l.id === id)
+    if (idx > -1) {
+      this.layers[idx].zIndex = level
     }
   },
 
@@ -87,6 +98,15 @@ export const templateStore = observable({
           this.setLayerType(LAYER_TYPE.TEXT)
         }
       }
+    })
+    // 隐藏一些下拉组件
+    document.dispatchEvent(new Event('mousedown'))
+  },
+
+  // 鼠标经过图层
+  hoverLayer (id?: string) {
+    this.layers.forEach(layer => {
+      layer.isHover = id ? layer.id === id : false
     })
   },
 
@@ -125,6 +145,11 @@ export const templateStore = observable({
   // 设置needUpdateLayerHeight
   setNeedUpdateLayerHeight (val: boolean) {
     this.needUpdateLayerHeight = val
+  },
+
+  // 设置isMoving
+  setIsMoving (val: boolean) {
+    this.isMoving = val
   }
 }, {
   setTemplate: action.bound,
@@ -134,12 +159,15 @@ export const templateStore = observable({
   addLayer: action.bound,
   removeLayer: action.bound,
   selectLayer: action.bound,
+  setLayerLevel: action.bound,
+  hoverLayer: action.bound,
   setLayerType: action.bound,
   editTextLayer: action.bound,
   resetSelectStatus: action.bound,
   resetEditStatus: action.bound,
   setBackgroundColor: action.bound,
-  setNeedUpdateLayerHeight: action.bound
+  setNeedUpdateLayerHeight: action.bound,
+  setIsMoving: action.bound
 })
 
 // 切换图层时重置文字编辑状态
@@ -161,6 +189,7 @@ const save = () => {
   template.layers = template.layers.map(l => {
     l.isSelected = false
     l.isEditing = false
+    l.isHover = false
     return l
   })
   localStorage.setItem('TEMPLATE', JSON.stringify(template))
@@ -173,6 +202,7 @@ reaction(
     template.layers = template.layers.map(l => {
       delete l.isSelected
       delete l.isEditing
+      delete l.isHover
       return l
     })
     return JSON.stringify(template)

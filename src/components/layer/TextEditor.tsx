@@ -8,14 +8,13 @@ import { Layer } from 'types';
 import { useCallback, useEffect, useRef, useState, useContext } from 'react';
 import { templateStore } from 'store/template';
 import { cloneDeep } from 'lodash';
-import { ScaleContext, MovingContext } from 'store/context';
+import { ScaleContext } from 'store/context';
 
 export default observer(({ layer }: { layer: Layer }) => {
   const editorRef = useRef<HTMLDivElement>(null)
 
-  const { editTextLayer, setLayer, needUpdateLayerHeight, setNeedUpdateLayerHeight } = templateStore
+  const { editTextLayer, setLayer, needUpdateLayerHeight, setNeedUpdateLayerHeight, isMoving } = templateStore
   const scale = useContext(ScaleContext)
-  const { isMoving } = useContext(MovingContext)
 
   // quill实例
   let [editor, setEditor] = useState<Quill | null>(null)
@@ -169,7 +168,9 @@ const Text = styled.div<{data: FontStyle}>(
     fontSize: props.data.fontSize,
     color: props.data.color,
     lineHeight: props.data.lineHeight,
-    textAlign: props.data.textAlign
+    textAlign: props.data.textAlign,
+    fontWeight: props.data.fontWeight,
+    textDecorationLine: props.data.underline ? 'underline' : 'none'
   })
 )
 

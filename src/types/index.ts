@@ -30,6 +30,7 @@ export interface Layer {
   style?: FontStyle;
   zIndex: number;
   isSelected?: boolean;
+  isHover?: boolean;
   isEditing?: boolean;
   scale?: number;
 }
@@ -40,6 +41,8 @@ export interface FontStyle {
   lineHeight: number;
   color: string;
   textAlign: Align;
+  fontWeight: number;
+  underline: boolean;
 }
 
 export type LayerType = 'image' | 'text'

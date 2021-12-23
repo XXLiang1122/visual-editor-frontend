@@ -1,11 +1,12 @@
-import React, { MouseEvent as MouseEventType, useContext, useState } from "react";
+import { MouseEvent as MouseEventType, useContext } from "react";
 import { createPortal } from "react-dom";
 import styled from "@emotion/styled";
 import { Layer as LayerType } from 'types';
-import { ScaleContext, BackgroundContext, MovingContext } from 'store/context';
+import { ScaleContext, BackgroundContext } from 'store/context';
 import { MouseEvents } from 'utils/mouseEvent';
 import { helpLine } from 'utils/helpLine'
 import Border from "./Border";
+import HoverBorder from "./HoverBorder";
 import { templateStore } from 'store/template';
 import { observer } from 'mobx-react';
 import { cloneDeep } from "lodash";
@@ -13,15 +14,10 @@ import { cloneDeep } from "lodash";
 // 图层
 export default observer(({ children, info }: { children: JSX.Element, info: LayerType }) => {
   const scale = useContext(ScaleContext)
-  const { template } = templateStore
-
-  const { layers, setLayer, selectLayer } = templateStore
+  const { template, layers, setLayer, selectLayer, hoverLayer, isMoving, setIsMoving } = templateStore
 
   // 设置背景选中状态
   const { setIsSelectedBackground } = useContext(BackgroundContext)
-
-  // 是否正在拖拽图层
-  const [isMoving, setIsMoving] = useState(false)
 
   // 辅助线
   const { getRect: helpLineRect, init: initHelpLine, move: helpLinePipe } = helpLine()
@@ -67,6 +63,18 @@ export default observer(({ children, info }: { children: JSX.Element, info: Laye
     }, info.id, layers, scale, { ...template.global })
   }
 
+  // 鼠标移入图层
+  const onLayerMouseEnter = (e: MouseEventType<HTMLDivElement>) => {
+    e.stopPropagation()
+    hoverLayer(info.id)
+  }
+
+  // 鼠标移出图层
+  const onLayerMouseOut = (e: MouseEventType<HTMLDivElement>) => {
+    e.stopPropagation()
+    hoverLayer()
+  }
+
   return <LayerWrapper
     style={{
       width: info.width,
@@ -75,16 +83,22 @@ export default observer(({ children, info }: { children: JSX.Element, info: Laye
       zIndex: info.zIndex
     }}
     onMouseDown={onSelectLayer}
+    onMouseEnter={onLayerMouseEnter}
+    onMouseOut={onLayerMouseOut}
     className={[isMoving ? 'moving' : '', info.isEditing ? 'edit' : ''].join(' ')}
   >
-    <MovingContext.Provider value={{ isMoving, setIsMoving }}>
-      <LayerContent style={{transform: `scale(${info.reverse?.x || 1}, ${info.reverse?.y || 1})`}}>
-        { children }
-      </LayerContent>
-      {info.isSelected && <TransportBorder>
-        <Border info={info} />
-      </TransportBorder>}
-    </MovingContext.Provider>
+    {/* 图层内容 */}
+    <LayerContent style={{transform: `scale(${info.reverse?.x || 1}, ${info.reverse?.y || 1})`}}>
+      { children }
+    </LayerContent>
+    {/* 拖拽边框 */}
+    {info.isSelected && <TransportBorder>
+      <Border info={info} />
+    </TransportBorder>}
+    {/* 鼠标移入边框 */}
+    {!info.isSelected && !isMoving && info.isHover && <TransportBorder>
+      <HoverBorder info={info} />
+    </TransportBorder>}
   </LayerWrapper>
 })
 

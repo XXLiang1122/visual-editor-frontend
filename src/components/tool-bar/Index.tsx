@@ -2,8 +2,8 @@ import styled from "@emotion/styled";
 import { observer } from 'mobx-react';
 import { templateStore } from 'store/template'
 import { LAYER_TYPE, Align } from 'types'
-import { Popover, Select, Dropdown, Menu } from 'antd';
-import { DeleteOutlined, AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined, SwapOutlined } from '@ant-design/icons';
+import { Popover, Select, Dropdown, Menu, Slider } from 'antd';
+import { DeleteOutlined, AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined, SwapOutlined, BoldOutlined, UnderlineOutlined } from '@ant-design/icons';
 import { ChromePicker, ColorResult } from 'react-color';
 import { cloneDeep } from "lodash";
 import { FONT_LIST, FONTSIZE_LIST } from 'utils/const'
@@ -17,6 +17,8 @@ export default observer(() => {
     layers,
     setLayerType,
     setLayer,
+    setLayers,
+    setLayerLevel,
     removeLayer,
     setBackgroundColor,
     setNeedUpdateLayerHeight
@@ -39,6 +41,21 @@ export default observer(() => {
   const fontSize = activeLayer?.style?.fontSize || 0
   // 文字水平对齐
   const textAlign = activeLayer?.style?.textAlign || 'left'
+  // 当前字体粗细
+  const fontWeight = activeLayer?.style?.fontWeight || 400
+  // 当前字体是否有下划线
+  const hasUnderline = activeLayer?.style?.underline || false
+
+  // 图层的层级关系
+  const levelInfo = {
+    min: 1,
+    max: 100,
+    current: 1
+  }
+  if (activeLayer) {
+    levelInfo.current = layers.findIndex(l => l.id === activeLayer.id) + 1
+    levelInfo.max = layers.length
+  }
 
   // 选择颜色
   const onColorChange = (clr: ColorResult) => {
@@ -79,6 +96,24 @@ export default observer(() => {
     }
   }
 
+  // 改变字体粗细
+  const onWeightChange = () => {
+    const layer = cloneDeep(activeLayer)
+    if (layer?.type === 'text' && layer.style) {
+      layer.style.fontWeight = layer.style.fontWeight === 700 ? 400 : 700
+      setLayer(layer)
+    }
+  }
+
+  // 设置下划线
+  const onUnderlineChange = () => {
+    const layer = cloneDeep(activeLayer)
+    if (layer?.type === 'text' && layer.style) {
+      layer.style.underline = !layer.style.underline
+      setLayer(layer)
+    }
+  }
+
   // 改变文本水平对齐
   const onTextAlignChange = () => {
     let align: Align = 'left'
@@ -106,6 +141,27 @@ export default observer(() => {
     }
   }
 
+  // 改变层级
+  const onLevelChange = (val: number) => {
+    // 下 -> 上
+    if (val > levelInfo.current) {
+      layers.forEach((l, idx) => {
+        if (idx + 1 > levelInfo.current && idx + 1 <= val) {
+          setLayerLevel(l.id, l.zIndex - 1)
+        }
+      })
+      activeLayer && setLayerLevel(activeLayer.id, activeLayer.zIndex + (val - levelInfo.current))
+    } else { // 上 -> 下
+      layers.forEach((l, idx) => {
+        if (idx + 1 >= val && idx + 1 < levelInfo.current) {
+          setLayerLevel(l.id, l.zIndex + 1)
+        }
+      })
+      activeLayer && setLayerLevel(activeLayer.id, activeLayer.zIndex - (levelInfo.current - val))
+    }
+    setLayers(cloneDeep(layers).sort((a, b) => a.zIndex - b.zIndex))
+  }
+
   // 删除图层
   const onRemove = () => {
     const layer = layers.find(layer => layer.isSelected)
@@ -115,6 +171,11 @@ export default observer(() => {
     }
   }
 
+  // 清空画布
+  const onClear = () => {
+    setLayers([])
+  }
+
   return <ToolBarWrapper>
     <ItemGroup>
       {/* 颜色 */}
@@ -122,7 +183,7 @@ export default observer(() => {
         <ToolItem>
           <Popover
             content={<ChromePicker color={color} onChange={onColorChange} />}
-            trigger="hover"
+            trigger="click"
           >
             <ColorItem style={{ backgroundColor: color }} />
           </Popover>
@@ -133,7 +194,6 @@ export default observer(() => {
         <ToolItem>
           <Select
             value={font}
-            // size="small"
             style={{ width: 140 }}
             placeholder="选择字体"
             onChange={onFontChange}
@@ -147,13 +207,24 @@ export default observer(() => {
         <ToolItem>
           <Select
             value={(fontSize * layerScale).toFixed(0)}
-            // size="small"
             style={{ width: 100, textAlign: 'center' }}
             placeholder="字体大小"
             onChange={onFontsizeChange}
           >
             {FONTSIZE_LIST.map(size => <Option key={size} value={size}>{size}</Option>)}
           </Select>
+        </ToolItem>
+      }
+      {/* 加粗 */}
+      {[LAYER_TYPE.TEXT].includes(layerType) &&
+        <ToolItem className={fontWeight === 700 ? 'active' : ''} onClick={onWeightChange}>
+          <BoldOutlined style={{ fontSize: 24 }} />
+        </ToolItem>
+      }
+      {/* 下划线 */}
+      {[LAYER_TYPE.TEXT].includes(layerType) &&
+        <ToolItem className={hasUnderline ? 'active' : ''} onClick={onUnderlineChange}>
+          <UnderlineOutlined style={{ fontSize: 24 }} />
         </ToolItem>
       }
       {/* 水平对齐 */}
@@ -164,12 +235,14 @@ export default observer(() => {
           {textAlign === 'right' && <AlignRightOutlined style={{ fontSize: 24 }} />}
         </ToolItem>
       }
+      {/* 图片翻转 */}
       {[LAYER_TYPE.IMAGE].includes(layerType) &&
         <ToolItem>
           <Dropdown 
             overlay={
               <Menu style={{ width: 120 }}>
                 <Menu.Item
+                  key="x"
                   style={{ padding: '10px' }}
                   icon={<SwapOutlined />}
                   onClick={() => onReverseImage('x')}
@@ -177,6 +250,7 @@ export default observer(() => {
                   水平翻转
                 </Menu.Item>
                 <Menu.Item
+                  key="y"
                   style={{ padding: '10px' }}
                   icon={<SwapOutlined style={{ transform: 'rotate(90deg)' }} />}
                   onClick={() => onReverseImage('y')}
@@ -187,16 +261,42 @@ export default observer(() => {
             }
             trigger={['click']}
           >
-            <span style={{ padding: '0 10px', fontSize: 16 }}>翻转</span>
+            <span className="text">翻转</span>
           </Dropdown>
         </ToolItem>
       }
     </ItemGroup>
     <ItemGroup>
+      {/* 图层层级 */}
+      {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT].includes(layerType) &&
+        <ToolItem>
+          <Popover
+            content={
+              <Slider
+                value={levelInfo.current}
+                min={levelInfo.min}
+                max={levelInfo.max}
+                style={{ width: 180 }}
+                onChange={onLevelChange}
+              />
+            }
+            trigger="click"
+            placement="bottomRight"
+          >
+            <span className="text">层级调整</span>
+          </Popover>
+        </ToolItem>
+      }
       {/* 删除 */}
       {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT].includes(layerType) &&
         <ToolItem onClick={onRemove}>
           <DeleteOutlined style={{ fontSize: 24 }} />
+        </ToolItem>
+      }
+      {/* 清空画布 */}
+      {[LAYER_TYPE.EMPTY].includes(layerType) &&
+        <ToolItem onClick={onClear}>
+          <span className="text">清空画布</span>
         </ToolItem>
       }
     </ItemGroup>
@@ -228,8 +328,17 @@ const ToolItem = styled.div`
   border-radius: 4px;
   cursor: pointer;
 
+  &.active {
+    background-color: rgba(64,87,109,.07);
+  }
+
   &:hover {
     background-color: rgba(64,87,109,.07);
+  }
+
+  .text {
+    padding: 0 10px;
+    font-size: 16px;
   }
 
   input[type="search"] {

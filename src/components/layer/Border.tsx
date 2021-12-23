@@ -1,12 +1,13 @@
 import { Layer } from 'types';
 import { MouseEvent, useContext, useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
-import { ScaleContext, MovingContext } from 'store/context';
+import { ScaleContext } from 'store/context';
 import { MouseEvents } from 'utils/mouseEvent';
 import { getCenterCoords, calcRotatedCoords } from 'utils';
 import rotateIcon from 'assets/rotate.svg';
 import { templateStore } from 'store/template';
 import { cloneDeep } from 'lodash';
+import { observer } from 'mobx-react';
 
 enum POINT_TYPE {
   TL = 'topLeft',
@@ -45,10 +46,10 @@ const ANGLE_TO_CURSOR = [
 ]
 
 // 编辑框
-export default function Border ({ info }: { info: Layer; }) {
+export default observer(({ info }: { info: Layer; }) => {
   const scale = useContext(ScaleContext)
-  const { isMoving, setIsMoving } = useContext(MovingContext)
-  const { layers, setLayer } = templateStore
+
+  const { layers, setLayer, isMoving, setIsMoving } = templateStore
 
   // 鼠标样式
   const [cursors, setCursors] = useState<string[]>([])
@@ -497,7 +498,7 @@ export default function Border ({ info }: { info: Layer; }) {
     }
     <RotateIcon className='rotate-point' icon={rotateIcon} onMouseDown={rotate} />
   </BorderEl>
-}
+})
 
 const BorderEl = styled.div`
   position: absolute;

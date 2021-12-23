@@ -1,10 +1,11 @@
 import styled from "@emotion/styled";
 import { ImageItem as ImageInfo } from "types/image";
 import { templateStore } from 'store/template';
-import { Layer } from 'types'
+import { Layer } from 'types';
+import { observer } from 'mobx-react';
 
-export default function ImageItem ({ image }: { image: ImageInfo }) {
-  const { template, layers, addLayer, selectLayer, resetSelectStatus } = templateStore
+export default observer(({ image }: { image: ImageInfo }) => {
+  const { template, layers, addLayer, resetSelectStatus } = templateStore
 
   // 使用图片
   const onUseImage = () => {
@@ -42,7 +43,7 @@ export default function ImageItem ({ image }: { image: ImageInfo }) {
   >
     <img src={image.webformatURL} alt="" />
   </Image>
-}
+})
 
 const Image = styled.div`
   position: relative;

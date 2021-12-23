@@ -1,8 +1,9 @@
 import { templateStore } from 'store/template';
-import { Layer } from 'types'
-import { Button } from 'antd'
+import { Layer } from 'types';
+import { Button } from 'antd';
+import { observer } from 'mobx-react';
 
-export default function TextItem () {
+export default observer(() => {
   const { template, layers, addLayer, resetSelectStatus, editTextLayer } = templateStore
 
   // 新增文本
@@ -25,7 +26,9 @@ export default function TextItem () {
         fontSize: 60,
         lineHeight: 1.2,
         color: '#000',
-        textAlign: 'left'
+        textAlign: 'left',
+        fontWeight: 400,
+        underline: false
       },
       zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
       isSelected: true,
@@ -40,4 +43,4 @@ export default function TextItem () {
   return <Button size="large" style={{ width: '100%' }} onClick={onUseImage}>
     添加文本
   </Button>
-}
+})
