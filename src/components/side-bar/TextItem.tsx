@@ -10,7 +10,7 @@ export default function TextItem () {
     const newLayer: Layer = {
       id: String(Date.now()),
       type: 'text',
-      width: 300,
+      width: 380,
       height: 72,
       position: {
         x: (template.global.width - 300) / 2,
@@ -18,7 +18,7 @@ export default function TextItem () {
       },
       rotate: 0,
       source: {
-        content: '编辑文字'
+        content: '双击编辑文字'
       },
       style: {
         font: '微软雅黑',

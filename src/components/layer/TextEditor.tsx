@@ -13,7 +13,7 @@ import { ScaleContext, MovingContext } from 'store/context';
 export default observer(({ layer }: { layer: Layer }) => {
   const editorRef = useRef<HTMLDivElement>(null)
 
-  const { editTextLayer, setLayer } = templateStore
+  const { editTextLayer, setLayer, needUpdateLayerHeight, setNeedUpdateLayerHeight } = templateStore
   const scale = useContext(ScaleContext)
   const { isMoving } = useContext(MovingContext)
 
@@ -53,10 +53,38 @@ export default observer(({ layer }: { layer: Layer }) => {
           }
         }
       }
-
       setLayer(_layer)
     }
   }, [editor, layer, setLayer, scale, canvasRect])
+
+  // 字体大小改变了，高度也要更新
+  useEffect(() => {
+    if (needUpdateLayerHeight && editorRef.current) {
+      const _layer = cloneDeep(layer)
+      const rect = editorRef.current.getBoundingClientRect()
+      const rad = (layer.rotate % 180) * Math.PI / 180
+      const newHeight = Math.abs((rect.height - layer.width * scale * Math.sin(rad)) / Math.cos(rad))
+
+      // 高度不一致表示换行/减行
+      if (newHeight / scale !== layer.height) {
+        _layer.height = newHeight / scale
+
+        const center = {
+          x: rect.left + rect.width / 2 - canvasRect.left,
+          y: rect.top + rect.height / 2 - canvasRect.top
+        }
+        const newX = center.x / scale - (layer.width / 2)
+        const newY = (center.y - (newHeight / 2)) / scale
+
+        _layer.position = {
+          x: newX,
+          y: newY
+        }
+        setLayer(_layer)
+      }
+      setNeedUpdateLayerHeight(false)
+    }
+  }, [canvasRect, layer, needUpdateLayerHeight, scale, setLayer, setNeedUpdateLayerHeight])
 
   // 拖拽改变文本框宽度时，更新图层最新高度
   // TODO: 位置会偏移
@@ -71,7 +99,6 @@ export default observer(({ layer }: { layer: Layer }) => {
       if (Math.abs(newHeight / scale - layer.height) > 1) {
         const _layer = cloneDeep(layer)
         _layer.height = newHeight / scale
-
         setLayer(_layer)
       }
     }
@@ -123,10 +150,10 @@ export default observer(({ layer }: { layer: Layer }) => {
     }}
   >
     <Text
-      style={layer.style as FontStyle}
+      data={layer.style as FontStyle}
       onDoubleClick={onEditText}
     >
-      <Editor ref={editorRef} />
+      <Editor ref={editorRef} spellCheck="false" />
     </Text>
   </TextWrapper>
 })
@@ -135,14 +162,14 @@ const TextWrapper = styled.div`
   transform-origin: 0 0;
 `
 
-const Text = styled.div<{style: FontStyle}>(
+const Text = styled.div<{data: FontStyle}>(
   {},
   props => ({
-    fontFamily: props.style.font,
-    fontSize: props.style.fontSize,
-    color: props.style.color,
-    lineHeight: props.style.lineHeight,
-    textAlign: props.style.textAlign
+    fontFamily: `"${props.data.font}"`,
+    fontSize: props.data.fontSize,
+    color: props.data.color,
+    lineHeight: props.data.lineHeight,
+    textAlign: props.data.textAlign
   })
 )
 

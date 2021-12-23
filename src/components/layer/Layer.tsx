@@ -78,7 +78,9 @@ export default observer(({ children, info }: { children: JSX.Element, info: Laye
     className={[isMoving ? 'moving' : '', info.isEditing ? 'edit' : ''].join(' ')}
   >
     <MovingContext.Provider value={{ isMoving, setIsMoving }}>
-      { children }
+      <LayerContent style={{transform: `scale(${info.reverse?.x || 1}, ${info.reverse?.y || 1})`}}>
+        { children }
+      </LayerContent>
       {info.isSelected && <TransportBorder>
         <Border info={info} />
       </TransportBorder>}
@@ -109,4 +111,10 @@ const LayerWrapper = styled.div`
   &.edit {
     cursor: text;
   }
+`
+
+const LayerContent = styled.div`
+  width: 100%;
+  height: 100%;
+  transition: transform 250ms;
 `

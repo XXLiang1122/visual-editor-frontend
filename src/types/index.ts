@@ -19,6 +19,10 @@ export interface Layer {
     y: number;
   };
   rotate: number;
+  reverse?: {
+    x: number;
+    y: number;
+  },
   source: {
     imageUrl?: string;
     content?: string;
@@ -40,3 +44,10 @@ export interface FontStyle {
 
 export type LayerType = 'image' | 'text'
 export type Align = 'left' | 'center' | 'right' | 'justify'
+
+export enum LAYER_TYPE {
+  EMPTY = 'empty',
+  IMAGE = 'image',
+  TEXT = 'text',
+  BACKGROUND = 'background'
+}

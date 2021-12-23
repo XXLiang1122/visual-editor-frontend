@@ -1,6 +1,6 @@
 import { observable, action, reaction } from 'mobx'
 import { defaultTemplate } from 'utils/initData'
-import { TemplateInfo, Layer } from 'types'
+import { TemplateInfo, Layer, LAYER_TYPE } from 'types'
 import { cloneDeep } from 'lodash'
 
 let template: TemplateInfo = Object.assign(defaultTemplate, {
@@ -14,7 +14,12 @@ if (localTemplateCache) {
 
 // 模板store
 export const templateStore = observable({
+  // 模板
   template: template,
+  // 当前编辑图层类型
+  layerType: LAYER_TYPE.EMPTY,
+  // 是否需要重新计算图层的高度，比如改变字体大小时需要
+  needUpdateLayerHeight: false,
 
   get layers (): Layer[] {
     return this.template.layers
@@ -56,6 +61,11 @@ export const templateStore = observable({
   // 新增单个图层
   addLayer (layer: Layer) {
     this.layers.push(layer)
+    if (layer.type === 'image') {
+      this.setLayerType(LAYER_TYPE.IMAGE)
+    } else if (layer.type === 'text') {
+      this.setLayerType(LAYER_TYPE.TEXT)
+    }
   },
 
   // 移除单个图层
@@ -70,7 +80,19 @@ export const templateStore = observable({
   selectLayer (id: string) {
     this.layers.forEach(layer => {
       layer.isSelected = layer.id === id
+      if (layer.isSelected) {
+        if (layer.type === 'image') {
+          this.setLayerType(LAYER_TYPE.IMAGE)
+        } else if (layer.type === 'text') {
+          this.setLayerType(LAYER_TYPE.TEXT)
+        }
+      }
     })
+  },
+
+  // 设置当前选择的图层类型
+  setLayerType (type: LAYER_TYPE) {
+    this.layerType = type
   },
 
   // 设置文字图层编辑状态
@@ -85,6 +107,7 @@ export const templateStore = observable({
     this.layers.forEach(layer => {
       layer.isSelected = false
     })
+    this.setLayerType(LAYER_TYPE.EMPTY)
   },
 
   // 重置所有文字图层编辑状态
@@ -92,6 +115,16 @@ export const templateStore = observable({
     this.layers.forEach(layer => {
       layer.isEditing = false
     })
+  },
+
+  // 设置背景色
+  setBackgroundColor (color: string) {
+    this.template.background.color = color
+  },
+
+  // 设置needUpdateLayerHeight
+  setNeedUpdateLayerHeight (val: boolean) {
+    this.needUpdateLayerHeight = val
   }
 }, {
   setTemplate: action.bound,
@@ -101,9 +134,12 @@ export const templateStore = observable({
   addLayer: action.bound,
   removeLayer: action.bound,
   selectLayer: action.bound,
+  setLayerType: action.bound,
   editTextLayer: action.bound,
   resetSelectStatus: action.bound,
-  resetEditStatus: action.bound
+  resetEditStatus: action.bound,
+  setBackgroundColor: action.bound,
+  setNeedUpdateLayerHeight: action.bound
 })
 
 // 切换图层时重置文字编辑状态

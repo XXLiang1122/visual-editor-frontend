@@ -19,6 +19,10 @@ export const defaultTemplate: TemplateInfo = {
         y: 100
       },
       rotate: 0,
+      reverse: {
+        x: 1,
+        y: 1
+      },
       source: {
         imageUrl: 'https://cdn.pixabay.com/photo/2014/04/13/20/49/cat-323262__340.jpg'
       },
@@ -27,7 +31,7 @@ export const defaultTemplate: TemplateInfo = {
     {
       id: '2',
       type: 'text',
-      width: 300,
+      width: 380,
       height: 72,
       position: {
         x: 100,
@@ -35,31 +39,16 @@ export const defaultTemplate: TemplateInfo = {
       },
       rotate: 0,
       source: {
-        content: '编辑文字'
+        content: '双击编辑文字'
       },
       style: {
-        font: '微软雅黑',
+        font: 'Microsoft Yahei',
         fontSize: 60,
         lineHeight: 1.2,
         color: '#000',
         textAlign: 'left'
       },
       zIndex: 2
-    },
-    {
-      id: '3',
-      type: 'image',
-      width: 300,
-      height: 200,
-      position: {
-        x: 700,
-        y: 400
-      },
-      rotate: 0,
-      source: {
-        imageUrl: 'https://cdn.pixabay.com/photo/2014/04/13/20/49/cat-323262__340.jpg'
-      },
-      zIndex: 3
     }
   ]
 }

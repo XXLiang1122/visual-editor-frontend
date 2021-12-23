@@ -18,6 +18,10 @@ export default function ImageItem ({ image }: { image: ImageInfo }) {
         y: (template.global.height - image.webformatHeight) / 2
       },
       rotate: 0,
+      reverse: {
+        x: 1,
+        y: 1
+      },
       source: {
         imageUrl: image.webformatURL
       },

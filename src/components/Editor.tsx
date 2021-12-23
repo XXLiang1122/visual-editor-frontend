@@ -2,6 +2,7 @@ import React, { MouseEvent, useCallback, useEffect, useRef, useState } from "rea
 import styled from "@emotion/styled";
 import Footer from "./Footer";
 import Canvas from "./Canvas";
+import ToolBar from "./tool-bar/Index"
 import { ScaleContext, BackgroundContext } from 'store/context';
 import { templateStore } from 'store/template';
 import { observer } from 'mobx-react';
@@ -61,6 +62,7 @@ export default observer(() => {
   }
 
   return <Wrapper>
+    <ToolBar />
     <CanvasWrapper ref={canvasWrapperRef} id="CanvasWrapper" onMouseDown={resetStatus}>
       <BackgroundContext.Provider value={{ isSelectedBackground, setIsSelectedBackground }}>
         <ScaleContext.Provider value={scale}>
@@ -83,7 +85,7 @@ const CanvasWrapper = styled.div`
   display: flex;
   align-items: center;
   width: 100%;
-  height: calc(100% - 44px);
+  height: calc(100% - 88px);
   overflow: scroll;
 
   ::-webkit-scrollbar {

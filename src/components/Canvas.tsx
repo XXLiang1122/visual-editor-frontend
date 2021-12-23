@@ -2,6 +2,7 @@ import React, { useContext, MouseEvent } from "react";
 import styled from "@emotion/styled";
 import { ScaleContext, BackgroundContext } from 'store/context';
 import Layer from './layer/Layer';
+import { LAYER_TYPE } from 'types'
 import { templateStore } from 'store/template';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
@@ -16,7 +17,7 @@ interface Props {
 
 // 画布
 export default observer(() => {
-  const { template, resetSelectStatus } = templateStore
+  const { template, resetSelectStatus, setLayerType } = templateStore
   const { global, background } = template
 
   const scale = useContext(ScaleContext)
@@ -30,6 +31,7 @@ export default observer(() => {
     e.stopPropagation()
     setIsSelectedBackground(true)
     resetSelectStatus()
+    setLayerType(LAYER_TYPE.BACKGROUND)
   }
 
   return <Wrapper width={global.width} height={global.height} scale={scale}>
