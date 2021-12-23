@@ -6,6 +6,11 @@ import ToolBar from "./tool-bar/Index"
 import { ScaleContext, BackgroundContext } from 'store/context';
 import { templateStore } from 'store/template';
 import { observer } from 'mobx-react';
+import { Layer } from 'types'
+import { cloneDeep } from "lodash";
+
+// 暂存复制的图层
+let copyLayer: Partial<Layer> = {}
 
 // 编辑器
 export default observer(() => {
@@ -14,7 +19,7 @@ export default observer(() => {
   // 画布父级容器dom ref
   const canvasWrapperRef = useRef<HTMLDivElement>(null)
   // 获取模板数据
-  const { template, resetSelectStatus, removeLayer } = templateStore
+  const { template, resetSelectStatus, removeLayer, addLayer } = templateStore
 
   // 是否选中背景
   const [isSelectedBackground, setIsSelectedBackground] = useState(false)
@@ -34,23 +39,44 @@ export default observer(() => {
     setScale(scale)
   }, [template.global.width, template.global.height])
 
-  // 删除图层
-  const onDeleteListener = useCallback((e: KeyboardEvent) => {
-    // 页面失焦时才能删除
+  // 键盘事件监听
+  const onKeyboardListener = useCallback((e: KeyboardEvent) => {
+    // 页面失焦
     if (document.activeElement === document.body || document.activeElement === null) {
+      // 删除
       if (e.key === 'Backspace' || e.key === 'Delete') {
         const layer = template.layers.find(layer => layer.isSelected)
         if (layer) {
           removeLayer(layer.id)
         }
       }
+      // 复制
+      if (e.key === 'c' && (e.metaKey || e.ctrlKey)) {
+        const layer = template.layers.find(layer => layer.isSelected)
+        if (layer && !template.layers.some(l => l.isEditing)) {
+          copyLayer = cloneDeep(layer)
+        }
+      }
+      // 粘贴
+      if (e.key === 'v' && (e.metaKey || e.ctrlKey)) {
+        if (!template.layers.some(l => l.isEditing)) {
+          if (copyLayer) {
+            copyLayer.position && (copyLayer.position.x += 10)
+            copyLayer.position && (copyLayer.position.y += 10)
+            copyLayer.id = String(Date.now())
+            copyLayer.zIndex = template.layers.length ? template.layers[template.layers.length - 1].zIndex + 1 : 1
+            resetSelectStatus()
+            addLayer(copyLayer as Layer)
+          }
+        }
+      }
     }
-  }, [removeLayer, template.layers])
+  }, [addLayer, removeLayer, resetSelectStatus, template.layers])
 
   useEffect(() => {
-    document.addEventListener('keydown', onDeleteListener)
-    return () => { document.removeEventListener('keydown', onDeleteListener) }
-  }, [onDeleteListener])
+    document.addEventListener('keydown', onKeyboardListener)
+    return () => { document.removeEventListener('keydown', onKeyboardListener) }
+  }, [onKeyboardListener])
 
   // 取消所有图层的选中状态包括背景
   const resetStatus = (e: MouseEvent<HTMLElement>) => {
