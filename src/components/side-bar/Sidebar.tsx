@@ -7,6 +7,7 @@ import { FilterOutlined } from '@ant-design/icons';
 import { Popover, Input, Button } from 'antd';
 import ImageItem from './ImageItem'
 import TextItem from './TextItem'
+import UploadImage from "./UploadImage";
 
 const { Panel } = Collapse
 const { Search } = Input
@@ -54,14 +55,14 @@ export default function Sidebar () {
 
   // 图片筛选面板
   const FilterPanel = () => {
-    const onSearch = (val: string) => {
+    const onSearch = (val: string, e: any) => {
+      e.preventDefault()
       if (val) {
         isLoadMore = false
         setQuery(Object.assign({}, query, {
           q: val,
           page: 1
         }))
-        setShowFilter(false)
       }
     }
 
@@ -86,6 +87,7 @@ export default function Sidebar () {
     <Collapse defaultActiveKey={['1']} collapsible="header">
       <Panel header={<div style={{ width: '300px' }}>图片</div>} key="1" extra={FilterPanel()}>
         <ListContent>
+          <UploadImage />
           {list.map(image => <ImageItem key={image.id} image={image} />)}
           <Button style={{ width: '100%', marginTop: '20px' }} onClick={onLoadMore}>加载更多</Button>
       </ListContent>

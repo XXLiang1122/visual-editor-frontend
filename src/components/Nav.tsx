@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 
 export default function Nav () {
   return <Header>
-    <Img src="/logo.webp" />
+    <Img src="/logo.png" />
   </Header>
 }
 

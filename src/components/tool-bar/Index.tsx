@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { observer } from 'mobx-react';
 import { templateStore } from 'store/template'
 import { LAYER_TYPE, Align } from 'types'
-import { Popover, Select, Dropdown, Menu, Slider } from 'antd';
+import { Popover, Select, Dropdown, Menu, Slider, Popconfirm } from 'antd';
 import {
   DeleteOutlined,
   AlignLeftOutlined,
@@ -202,6 +202,7 @@ export default observer(() => {
           <Popover
             content={<ChromePicker color={color} onChange={onColorChange} />}
             trigger="click"
+            placement="bottomLeft"
           >
             <ColorItem style={{ backgroundColor: color }} />
           </Popover>
@@ -319,8 +320,16 @@ export default observer(() => {
       }
       {/* 清空画布 */}
       {[LAYER_TYPE.EMPTY].includes(layerType) &&
-        <ToolItem onClick={onClear}>
-          <span className="text">清空画布</span>
+        <ToolItem>
+          <Popconfirm
+            placement="bottomRight"
+            title="确定清空画布？"
+            onConfirm={onClear}
+            okText="清空"
+            cancelText="取消"
+          >
+            <span className="text">清空画布</span>
+          </Popconfirm>
         </ToolItem>
       }
     </ItemGroup>
