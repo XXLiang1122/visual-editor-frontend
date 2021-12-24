@@ -4,7 +4,7 @@ import { TemplateInfo, Layer, LAYER_TYPE } from 'types'
 import { cloneDeep } from 'lodash'
 
 let template: TemplateInfo = Object.assign(defaultTemplate, {
-  layers: defaultTemplate.layers.map(layer => { return {...layer, isSelected: false, isEditing: false, isHover: false, scale: 1} })
+  layers: defaultTemplate.layers.map(layer => { return {...layer, isSelected: false, isEditing: false, isHover: false, isLocked: false, scale: 1} })
 })
 
 const localTemplateCache = localStorage.getItem('TEMPLATE')
@@ -37,6 +37,7 @@ export const templateStore = observable({
       delete l.isSelected
       delete l.isEditing
       delete l.scale
+      delete l.isLocked
       return l
     })
     return _template
@@ -55,7 +56,7 @@ export const templateStore = observable({
   // 修改单个图层
   setLayer (layer: Layer) {
     const idx = this.layers.findIndex(l => l.id === layer.id)
-    if (idx > -1) {
+    if (idx > -1 && !this.layers[idx].isLocked) {
       this.layers[idx] = layer
     }
   },
@@ -73,7 +74,7 @@ export const templateStore = observable({
   // 移除单个图层
   removeLayer (id: string) {
     const idx = this.layers.findIndex(l => l.id === id)
-    if (idx > -1) {
+    if (idx > -1 && !this.layers[idx].isLocked) {
       this.layers.splice(idx, 1)
       this.setLayerType(LAYER_TYPE.EMPTY)
     }
@@ -117,9 +118,19 @@ export const templateStore = observable({
 
   // 设置文字图层编辑状态
   editTextLayer (id: string) {
+    if (this.layers.some(l => l.id === id && l.isLocked)) return
     this.layers.forEach(layer => {
       layer.isEditing = layer.id === id
     })
+  },
+
+  // 设置图层锁定状态
+  setLayerLock (id: string, isLocked: boolean) {
+    const idx = this.layers.findIndex(l => l.id === id)
+    if (idx > -1) {
+      this.layers[idx].isLocked = isLocked
+      this.layers[idx].isEditing = false
+    }
   },
 
   // 重置所有图层选中状态
@@ -163,6 +174,7 @@ export const templateStore = observable({
   hoverLayer: action.bound,
   setLayerType: action.bound,
   editTextLayer: action.bound,
+  setLayerLock: action.bound,
   resetSelectStatus: action.bound,
   resetEditStatus: action.bound,
   setBackgroundColor: action.bound,
@@ -190,6 +202,7 @@ const save = () => {
     l.isSelected = false
     l.isEditing = false
     l.isHover = false
+    l.isLocked = false
     return l
   })
   localStorage.setItem('TEMPLATE', JSON.stringify(template))
@@ -203,6 +216,7 @@ reaction(
       delete l.isSelected
       delete l.isEditing
       delete l.isHover
+      delete l.isLocked
       return l
     })
     return JSON.stringify(template)

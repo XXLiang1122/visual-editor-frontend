@@ -5,6 +5,7 @@ import { ScaleContext } from 'store/context';
 import { MouseEvents } from 'utils/mouseEvent';
 import { getCenterCoords, calcRotatedCoords } from 'utils';
 import rotateIcon from 'assets/rotate.svg';
+import lockIcon from 'assets/lock.svg';
 import { templateStore } from 'store/template';
 import { cloneDeep } from 'lodash';
 import { observer } from 'mobx-react';
@@ -485,18 +486,23 @@ export default observer(({ info }: { info: Layer; }) => {
     }}
     className={['border-control', isMoving ? 'moving' : ''].join(' ')}
   >
-    <PointBR style={{ cursor: cursors[0] }} onMouseDown={e => resize(e, POINT_TYPE.BR)} />
-    {info.width * scale > 30 && info.height * scale > 30 && <>
-        <PointTL style={{ cursor: cursors[0] }} onMouseDown={e => resize(e, POINT_TYPE.TL)} />
-        <PointTR style={{ cursor: cursors[2] }} onMouseDown={e => resize(e, POINT_TYPE.TR)} />
-        <PointBL style={{ cursor: cursors[2] }} onMouseDown={e => resize(e, POINT_TYPE.BL)} />
-        <PointL style={{ cursor: cursors[3] }} onMouseDown={e => resize(e, POINT_TYPE.L)} />
-        <PointR style={{ cursor: cursors[3] }} onMouseDown={e => resize(e, POINT_TYPE.R)} />
-        { info.type !== 'text' && <PointT style={{ cursor: cursors[1] }} onMouseDown={e => resize(e, POINT_TYPE.T)} /> }
-        { info.type !== 'text' && <PointB style={{ cursor: cursors[1] }} onMouseDown={e => resize(e, POINT_TYPE.B)} /> }
+    {info.isLocked ?
+      <LockIcon icon={lockIcon} rotate={info.rotate} /> :
+      <>
+        <PointBR style={{ cursor: cursors[0] }} onMouseDown={e => resize(e, POINT_TYPE.BR)} />
+        {info.width * scale > 30 && info.height * scale > 30 && <>
+            <PointTL style={{ cursor: cursors[0] }} onMouseDown={e => resize(e, POINT_TYPE.TL)} />
+            <PointTR style={{ cursor: cursors[2] }} onMouseDown={e => resize(e, POINT_TYPE.TR)} />
+            <PointBL style={{ cursor: cursors[2] }} onMouseDown={e => resize(e, POINT_TYPE.BL)} />
+            <PointL style={{ cursor: cursors[3] }} onMouseDown={e => resize(e, POINT_TYPE.L)} />
+            <PointR style={{ cursor: cursors[3] }} onMouseDown={e => resize(e, POINT_TYPE.R)} />
+            { info.type !== 'text' && <PointT style={{ cursor: cursors[1] }} onMouseDown={e => resize(e, POINT_TYPE.T)} /> }
+            { info.type !== 'text' && <PointB style={{ cursor: cursors[1] }} onMouseDown={e => resize(e, POINT_TYPE.B)} /> }
+          </>
+        }
+        <RotateIcon className='rotate-point' icon={rotateIcon} onMouseDown={rotate} />
       </>
     }
-    <RotateIcon className='rotate-point' icon={rotateIcon} onMouseDown={rotate} />
   </BorderEl>
 })
 
@@ -646,5 +652,27 @@ const RotateIcon = styled.div<{icon: string}>(
   },
   props => ({
     background: `#fff url(${props.icon}) no-repeat center / 18px 18px`
+  })
+)
+
+const LockIcon = styled.div<{icon: string; rotate: number}>(
+  {
+    position: 'absolute',
+    right: '0',
+    bottom: '0',
+    width: '20px',
+    height: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'auto',
+    borderRadius: '50%',
+    boxShadow: '0 0 5px 1px rgb(57 76 96 / 15%), 0 0 0 1px rgb(57 76 96 / 15%)',
+    userSelect: 'none',
+    zIndex: '1'
+  },
+  props => ({
+    background: `#fff url(${props.icon}) no-repeat center / 13px 13px`,
+    transform: `translate(50%, 50%) rotate(${-props.rotate}deg)`
   })
 )

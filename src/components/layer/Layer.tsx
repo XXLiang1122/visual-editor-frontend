@@ -52,6 +52,8 @@ export default observer(({ children, info }: { children: JSX.Element, info: Laye
     if (info.isEditing) return
     selectLayer(info.id)
     setIsSelectedBackground(false)
+    // 锁定了就不给拖动
+    if (info.isLocked) return
     // 初始化拖拽事件
     new MouseEvents(e, updatePosition, hideLine)
     // 初始化辅助线数据

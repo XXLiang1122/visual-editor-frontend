@@ -32,6 +32,7 @@ export interface Layer {
   isSelected?: boolean;
   isHover?: boolean;
   isEditing?: boolean;
+  isLocked?: boolean;
   scale?: number;
 }
 

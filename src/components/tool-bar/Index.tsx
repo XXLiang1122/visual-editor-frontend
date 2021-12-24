@@ -3,7 +3,17 @@ import { observer } from 'mobx-react';
 import { templateStore } from 'store/template'
 import { LAYER_TYPE, Align } from 'types'
 import { Popover, Select, Dropdown, Menu, Slider } from 'antd';
-import { DeleteOutlined, AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined, SwapOutlined, BoldOutlined, UnderlineOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  AlignLeftOutlined,
+  AlignCenterOutlined,
+  AlignRightOutlined,
+  SwapOutlined,
+  BoldOutlined,
+  UnderlineOutlined,
+  LockOutlined,
+  UnlockOutlined
+} from '@ant-design/icons';
 import { ChromePicker, ColorResult } from 'react-color';
 import { cloneDeep } from "lodash";
 import { FONT_LIST, FONTSIZE_LIST } from 'utils/const'
@@ -15,11 +25,11 @@ export default observer(() => {
     template,
     layerType,
     layers,
-    setLayerType,
     setLayer,
     setLayers,
     setLayerLevel,
     removeLayer,
+    setLayerLock,
     setBackgroundColor,
     setNeedUpdateLayerHeight
   } = templateStore
@@ -45,7 +55,9 @@ export default observer(() => {
   const fontWeight = activeLayer?.style?.fontWeight || 400
   // 当前字体是否有下划线
   const hasUnderline = activeLayer?.style?.underline || false
-
+  
+  // 图层是否被锁定了
+  const isLocked = activeLayer?.isLocked || false
   // 图层的层级关系
   const levelInfo = {
     min: 1,
@@ -162,12 +174,18 @@ export default observer(() => {
     setLayers(cloneDeep(layers).sort((a, b) => a.zIndex - b.zIndex))
   }
 
+  // 切换图层锁定状态
+  const onToggleLayerLock = () => {
+    if (activeLayer) {
+      setLayerLock(activeLayer.id, !activeLayer.isLocked)
+    }
+  }
+
   // 删除图层
   const onRemove = () => {
     const layer = layers.find(layer => layer.isSelected)
     if (layer) {
       removeLayer(layer.id)
-      setLayerType(LAYER_TYPE.EMPTY)
     }
   }
 
@@ -177,7 +195,7 @@ export default observer(() => {
   }
 
   return <ToolBarWrapper>
-    <ItemGroup>
+    <ItemGroup className={isLocked ? 'locked' : ''}>
       {/* 颜色 */}
       {[LAYER_TYPE.BACKGROUND, LAYER_TYPE.TEXT].includes(layerType) &&
         <ToolItem>
@@ -266,7 +284,7 @@ export default observer(() => {
         </ToolItem>
       }
     </ItemGroup>
-    <ItemGroup>
+    <ItemGroup className={isLocked ? 'locked' : ''}>
       {/* 图层层级 */}
       {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT].includes(layerType) &&
         <ToolItem>
@@ -285,6 +303,12 @@ export default observer(() => {
           >
             <span className="text">层级调整</span>
           </Popover>
+        </ToolItem>
+      }
+      {/* 图层锁定 */}
+      {[LAYER_TYPE.TEXT, LAYER_TYPE.IMAGE].includes(layerType) &&
+        <ToolItem className={["item-lock", isLocked ? 'active' : ''].join(' ')} onClick={onToggleLayerLock}>
+          {isLocked ? <LockOutlined style={{ fontSize: 24 }} /> : <UnlockOutlined style={{ fontSize: 24 }} />}
         </ToolItem>
       }
       {/* 删除 */}
@@ -318,6 +342,10 @@ const ToolBarWrapper = styled.div`
 const ItemGroup = styled.div`
   display: flex;
   align-items: center;
+
+  &.locked>div:not(.item-lock) {
+    display: none;
+  }
 `
 
 const ToolItem = styled.div`
@@ -329,7 +357,7 @@ const ToolItem = styled.div`
   cursor: pointer;
 
   &.active {
-    background-color: rgba(64,87,109,.07);
+    background-color: rgba(57,76,96,.15);
   }
 
   &:hover {

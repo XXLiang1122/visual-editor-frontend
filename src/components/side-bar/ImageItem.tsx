@@ -29,6 +29,7 @@ export default observer(({ image }: { image: ImageInfo }) => {
       zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
       isSelected: true,
       isEditing: false,
+      isLocked: false,
       scale: 1
     }
     resetSelectStatus()
