@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { observer } from 'mobx-react';
 import { templateStore } from 'store/template'
 import { LAYER_TYPE, Align } from 'types'
-import { Popover, Select, Dropdown, Menu, Slider, Popconfirm } from 'antd';
+import { Popover, Select, Dropdown, Menu, Slider, Popconfirm, Radio, Space, InputNumber, Button, RadioChangeEvent } from 'antd';
 import {
   DeleteOutlined,
   AlignLeftOutlined,
@@ -15,8 +15,9 @@ import {
   UnlockOutlined
 } from '@ant-design/icons';
 import { ChromePicker, ColorResult } from 'react-color';
-import { cloneDeep } from "lodash";
-import { FONT_LIST, FONTSIZE_LIST } from 'utils/const'
+import { cloneDeep, isNumber } from "lodash";
+import { FONT_LIST, FONTSIZE_LIST, CANVAS_SIZE_LIST } from 'utils/const'
+import { useEffect, useState } from "react";
 
 const { Option } = Select;
 
@@ -25,6 +26,7 @@ export default observer(() => {
     template,
     layerType,
     layers,
+    setCanvasSize,
     setLayer,
     setLayers,
     setLayerLevel,
@@ -33,6 +35,8 @@ export default observer(() => {
     setBackgroundColor,
     setNeedUpdateLayerHeight
   } = templateStore
+
+  const [selectValue, setSelectValue] = useState('1')
 
   const activeLayer = layers.find(l => l.isSelected)
   const layerScale = activeLayer?.scale || 1
@@ -68,6 +72,19 @@ export default observer(() => {
     levelInfo.current = layers.findIndex(l => l.id === activeLayer.id) + 1
     levelInfo.max = layers.length
   }
+
+  const canvasWidth = template.global.width
+  const canvasHeight = template.global.height
+
+  useEffect(() => {
+    const res = CANVAS_SIZE_LIST.find(i => i.width === canvasWidth && i.height === canvasHeight && i.value !== selectValue)
+    if (res) {
+      setSelectValue(res.value)
+    } else if (selectValue !== '6') {
+      setSelectValue('6')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // 选择颜色
   const onColorChange = (clr: ColorResult) => {
@@ -194,8 +211,70 @@ export default observer(() => {
     setLayers([])
   }
 
+  // 选择画布尺寸
+  const onCanvasSizeChange = (e: RadioChangeEvent) => {
+    setSelectValue(e.target.value)
+    const res = CANVAS_SIZE_LIST.find(i => i.value === e.target.value)
+    if (res) {
+      setCanvasSize({
+        width: res.width,
+        height: res.height
+      })
+    }
+  }
+
+  // 画布宽度修改
+  const onChangeWidth = (val: number) => {
+    if (isNumber(val) && val > 0) {
+      setCanvasSize({
+        width: val,
+        height: canvasHeight
+      })
+    }
+  }
+
+  // 画布高度修改
+  const onChangeHeight = (val: number) => {
+    if (isNumber(val) && val > 0) {
+      setCanvasSize({
+        width: canvasWidth,
+        height: val
+      })
+    }
+  }
+
+  // 画布尺寸列表
+  const CanvasSizeOptions = (
+    <>
+      <Radio.Group onChange={onCanvasSizeChange} value={selectValue}>
+        <Space direction="vertical">
+          {CANVAS_SIZE_LIST.map(i => <Radio key={i.value} value={i.value}>{i.label}</Radio>)}
+          <Radio value={'6'}>
+            自定义
+            {selectValue === '6' ? <div style={{ marginTop: 10 }}>
+              <InputNumber value={canvasWidth} size="small" placeholder="宽" style={{ width: 100, marginRight: 10 }} onChange={onChangeWidth} />×
+              <InputNumber value={canvasHeight} size="small" placeholder="高" style={{ width: 100, marginLeft: 10, marginRight: 10 }} onChange={onChangeHeight} /> 像素
+            </div> : null}
+          </Radio>
+        </Space>
+      </Radio.Group>
+    </>
+  )
+
   return <ToolBarWrapper>
     <ItemGroup className={isLocked ? 'locked' : ''}>
+      {/* 画布尺寸 */}
+      {[LAYER_TYPE.EMPTY].includes(layerType) &&
+        <ToolItem>
+          <Popover
+            content={CanvasSizeOptions}
+            trigger="click"
+            placement="bottomLeft"
+          >
+            <span className="text">画布尺寸</span>
+          </Popover>
+        </ToolItem>
+      }
       {/* 颜色 */}
       {[LAYER_TYPE.BACKGROUND, LAYER_TYPE.TEXT].includes(layerType) &&
         <ToolItem>

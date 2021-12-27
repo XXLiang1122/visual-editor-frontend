@@ -37,7 +37,6 @@ export const templateStore = observable({
       delete l.isSelected
       delete l.isEditing
       delete l.scale
-      delete l.isLocked
       return l
     })
     return _template
@@ -46,6 +45,12 @@ export const templateStore = observable({
   // 修改整体模板
   setTemplate (val: TemplateInfo) {
     this.template = val
+  },
+
+  // 修改画布尺寸
+  setCanvasSize (size: { width: number; height: number }) {
+    this.template.global.width = size.width
+    this.template.global.height = size.height
   },
 
   // 修改全部图层
@@ -165,6 +170,7 @@ export const templateStore = observable({
 }, {
   setTemplate: action.bound,
   getTemplate: action.bound,
+  setCanvasSize: action.bound,
   setLayers: action.bound,
   setLayer: action.bound,
   addLayer: action.bound,
@@ -202,7 +208,6 @@ const save = () => {
     l.isSelected = false
     l.isEditing = false
     l.isHover = false
-    l.isLocked = false
     return l
   })
   localStorage.setItem('TEMPLATE', JSON.stringify(template))
@@ -216,7 +221,6 @@ reaction(
       delete l.isSelected
       delete l.isEditing
       delete l.isHover
-      delete l.isLocked
       return l
     })
     return JSON.stringify(template)
