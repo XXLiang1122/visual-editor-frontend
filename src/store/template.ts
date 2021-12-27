@@ -2,6 +2,7 @@ import { observable, action, reaction } from 'mobx'
 import { defaultTemplate } from 'utils/initData'
 import { TemplateInfo, Layer, LAYER_TYPE } from 'types'
 import { cloneDeep } from 'lodash'
+import undoRedo from 'utils/undoRedo'
 
 let template: TemplateInfo = Object.assign(defaultTemplate, {
   layers: defaultTemplate.layers.map(layer => { return {...layer, isSelected: false, isEditing: false, isHover: false, isLocked: false, scale: 1} })
@@ -22,6 +23,8 @@ export const templateStore = observable({
   needUpdateLayerHeight: false,
   // 图层是否正在移动
   isMoving: false,
+  canUseUndo: false,
+  canUseRedo: false,
 
   get layers (): Layer[] {
     return this.template.layers
@@ -166,7 +169,15 @@ export const templateStore = observable({
   // 设置isMoving
   setIsMoving (val: boolean) {
     this.isMoving = val
-  }
+  },
+
+  setCanUseUndo (val: boolean) {
+    this.canUseUndo = val
+  },
+
+  setCanUseRedo (val: boolean) {
+    this.canUseRedo = val
+  },
 }, {
   setTemplate: action.bound,
   getTemplate: action.bound,
@@ -185,7 +196,9 @@ export const templateStore = observable({
   resetEditStatus: action.bound,
   setBackgroundColor: action.bound,
   setNeedUpdateLayerHeight: action.bound,
-  setIsMoving: action.bound
+  setIsMoving: action.bound,
+  setCanUseUndo: action.bound,
+  setCanUseRedo: action.bound
 })
 
 // 切换图层时重置文字编辑状态
@@ -200,6 +213,10 @@ reaction(
     }
   }
 )
+
+// 撤销重做
+const { init, pushHistory } = undoRedo()
+init(template)
 
 // 保存到本地
 const save = () => {
@@ -225,7 +242,7 @@ reaction(
     })
     return JSON.stringify(template)
   },
-  save,
+  () => { save(); pushHistory() },
   {
     delay: 500
   }

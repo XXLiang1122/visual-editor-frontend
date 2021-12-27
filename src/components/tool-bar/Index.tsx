@@ -2,7 +2,18 @@ import styled from "@emotion/styled";
 import { observer } from 'mobx-react';
 import { templateStore } from 'store/template'
 import { LAYER_TYPE, Align } from 'types'
-import { Popover, Select, Dropdown, Menu, Slider, Popconfirm, Radio, Space, InputNumber, Button, RadioChangeEvent } from 'antd';
+import {
+  Popover,
+  Select,
+  Dropdown,
+  Menu,
+  Slider,
+  Popconfirm,
+  Radio,
+  Space,
+  InputNumber,
+  RadioChangeEvent
+} from 'antd';
 import {
   DeleteOutlined,
   AlignLeftOutlined,

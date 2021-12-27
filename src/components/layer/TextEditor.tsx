@@ -118,11 +118,10 @@ export default observer(({ layer }: { layer: Layer }) => {
 
   // 设置文本内容
   useEffect(() => {
-    if (editor && layer.source.content) {
+    if (editor && layer.source.content && editor.getText() !== layer.source.content) {
       editor.setText(layer.source.content)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor])
+  }, [editor, layer.source.content])
 
   // 设置编辑状态
   useEffect(() => {

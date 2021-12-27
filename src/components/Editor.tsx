@@ -8,6 +8,9 @@ import { templateStore } from 'store/template';
 import { observer } from 'mobx-react';
 import { Layer } from 'types'
 import { cloneDeep } from "lodash";
+import undoRedo from 'utils/undoRedo';
+
+const { undo, redo } = undoRedo()
 
 // 暂存复制的图层
 let copyLayer: Partial<Layer> = {}
@@ -69,6 +72,14 @@ export default observer(() => {
             addLayer(copyLayer as Layer)
           }
         }
+      }
+      // 撤销
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        undo()
+      }
+      // 重做
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+        redo()
       }
     }
   }, [addLayer, removeLayer, resetSelectStatus, template.layers])

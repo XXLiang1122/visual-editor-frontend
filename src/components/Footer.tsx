@@ -1,22 +1,37 @@
 import styled from "@emotion/styled";
 import { Slider } from "antd";
+import UndoIcon from "assets/undo.png";
+import RedoIcon from "assets/redo.png";
+import undoRedo from 'utils/undoRedo'
+import { templateStore } from 'store/template'
+import { observer } from 'mobx-react';
 
-export default function Footer ({ scale, setScale }: { scale: number; setScale: (n: number) => void }) {
+const { undo, redo } = undoRedo()
+
+export default observer(({ scale, setScale }: { scale: number; setScale: (n: number) => void }) => {
+  const { canUseUndo, canUseRedo } = templateStore
+
   const scaleChange = (val: number) => {
     setScale(val / 100)
   }
 
   return <FooterBar>
-    <Slider
-      className="slider"
-      tipFormatter={null}
-      defaultValue={scale * 100}
-      min={10} max={500}
-      onChange={scaleChange}
-    />
-    <div className="scale">{Math.round(scale * 100)}%</div>
+    <SliderWrapper>
+      <Slider
+        className="slider"
+        tipFormatter={null}
+        defaultValue={scale * 100}
+        min={10} max={500}
+        onChange={scaleChange}
+      />
+      <div className="scale">{Math.round(scale * 100)}%</div>
+    </SliderWrapper>
+    <UndoRedo>
+      <ToolItem className={ canUseUndo ? 'active' : '' } onClick={undo}><img src={UndoIcon} alt="" /></ToolItem>
+      <ToolItem className={ canUseRedo ? 'active' : '' } onClick={redo}><img src={RedoIcon} alt="" /></ToolItem>
+    </UndoRedo>
   </FooterBar>
-}
+})
 
 const FooterBar = styled.footer`
   position: absolute;
@@ -27,7 +42,7 @@ const FooterBar = styled.footer`
   justify-content: flex-end;
   width: 100%;
   height: 44px;
-  padding-right: 40px;
+  padding: 0 40px;
   background-color: #fff;
   border-top: 1px solid #ddd;
 
@@ -38,5 +53,41 @@ const FooterBar = styled.footer`
   .scale {
     width: 100px;
     padding-left: 20px;
+  }
+`
+
+const SliderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`
+
+const UndoRedo = styled.div`
+  display: flex;
+  justify-content: space-around;
+  width: 120px;
+
+  img {
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+    user-select: none;
+  }
+`
+
+const ToolItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: not-allowed;
+  opacity: .5;
+
+  &:hover {
+    background-color: rgba(64,87,109,.07);
+  }
+
+  &.active {
+    opacity: 1;
+    cursor: pointer;
   }
 `
