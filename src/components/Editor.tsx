@@ -56,14 +56,14 @@ export default observer(() => {
       // 复制
       if (e.key === 'c' && (e.metaKey || e.ctrlKey)) {
         const layer = template.layers.find(layer => layer.isSelected)
-        if (layer && !template.layers.some(l => l.isEditing)) {
+        if (layer && !template.layers.some(l => l.isEditing) && !layer.isLocked) {
           copyLayer = cloneDeep(layer)
         }
       }
       // 粘贴
       if (e.key === 'v' && (e.metaKey || e.ctrlKey)) {
         if (!template.layers.some(l => l.isEditing)) {
-          if (copyLayer) {
+          if (copyLayer.id) {
             copyLayer.position && (copyLayer.position.x += 10)
             copyLayer.position && (copyLayer.position.y += 10)
             copyLayer.id = String(Date.now())
