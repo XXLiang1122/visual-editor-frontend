@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
+import Logo from 'assets/logo.png'
 
 export default function Nav () {
   return <Header>
-    <Img src="/logo.png" />
+    <Img src={Logo} />
   </Header>
 }
 

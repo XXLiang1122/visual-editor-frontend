@@ -3,6 +3,7 @@ import { ImageItem as ImageInfo } from "types/image";
 import { templateStore } from 'store/template';
 import { Layer } from 'types';
 import { observer } from 'mobx-react';
+import { DragEvent } from 'react'
 
 export default observer(({ image }: { image: ImageInfo }) => {
   const { template, layers, addLayer, resetSelectStatus } = templateStore
@@ -36,13 +37,20 @@ export default observer(({ image }: { image: ImageInfo }) => {
     addLayer(newLayer)
   }
 
+  // 拖拽图片
+  const onDragStartCapture = (e: DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData('image', JSON.stringify(image))
+  }
+
   return <Image
     style={{
       flexBasis: `${100 * image.webformatWidth / image.webformatHeight}px`
     }}
+    draggable="true"
     onClick={onUseImage}
+    onDragStartCapture={onDragStartCapture}
   >
-    <img src={image.webformatURL} alt="" />
+    <img src={image.webformatURL} alt="" draggable="false" />
   </Image>
 })
 
