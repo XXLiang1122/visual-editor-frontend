@@ -26,6 +26,7 @@ export const defaultTemplate: TemplateInfo = {
       source: {
         imageUrl: 'https://cdn.pixabay.com/photo/2014/04/13/20/49/cat-323262__340.jpg'
       },
+      opacity: 1,
       zIndex: 1
     },
     {
@@ -50,6 +51,7 @@ export const defaultTemplate: TemplateInfo = {
         fontWeight: 400,
         underline: false
       },
+      opacity: 1,
       zIndex: 2
     }
   ]

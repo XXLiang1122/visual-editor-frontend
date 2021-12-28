@@ -25,6 +25,7 @@ import {
   LockOutlined,
   UnlockOutlined
 } from '@ant-design/icons';
+import opacityIcon from 'assets/opacity.svg'
 import { ChromePicker, ColorResult } from 'react-color';
 import { cloneDeep, isNumber } from "lodash";
 import { FONT_LIST, FONTSIZE_LIST, CANVAS_SIZE_LIST } from 'utils/const'
@@ -70,6 +71,9 @@ export default observer(() => {
   const fontWeight = activeLayer?.style?.fontWeight || 400
   // 当前字体是否有下划线
   const hasUnderline = activeLayer?.style?.underline || false
+
+  // 透明度
+  const opacity = activeLayer?.opacity
   
   // 图层是否被锁定了
   const isLocked = activeLayer?.isLocked || false
@@ -200,6 +204,14 @@ export default observer(() => {
       activeLayer && setLayerLevel(activeLayer.id, activeLayer.zIndex - (levelInfo.current - val))
     }
     setLayers(cloneDeep(layers).sort((a, b) => a.zIndex - b.zIndex))
+  }
+
+  const onOpacityChange = (val: number) => {
+    const layer = cloneDeep(activeLayer)
+    if (layer) {
+      layer.opacity = val
+      setLayer(layer)
+    }
   }
 
   // 切换图层锁定状态
@@ -393,6 +405,27 @@ export default observer(() => {
             placement="bottomRight"
           >
             <span className="text">层级调整</span>
+          </Popover>
+        </ToolItem>
+      }
+      {/* 透明度 */}
+      {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT].includes(layerType) &&
+        <ToolItem>
+          <Popover
+            content={
+              <Slider
+                value={opacity}
+                min={0}
+                max={1}
+                step={0.01}
+                style={{ width: 180 }}
+                onChange={onOpacityChange}
+              />
+            }
+            trigger="click"
+            placement="bottomRight"
+          >
+            <img src={opacityIcon} width="24" height="24" alt="" />
           </Popover>
         </ToolItem>
       }

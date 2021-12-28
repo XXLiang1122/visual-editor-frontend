@@ -82,6 +82,7 @@ export default observer(({ children, info }: { children: JSX.Element, info: Laye
       width: info.width,
       height: info.height,
       transform: `translate(${info.position.x}px, ${info.position.y}px) rotate(${info.rotate}deg)`,
+      opacity: info.opacity,
       zIndex: info.zIndex
     }}
     onMouseDown={onSelectLayer}

@@ -42,6 +42,7 @@ export default observer(() => {
       source: {
         imageUrl: url
       },
+      opacity: 1,
       zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
       isSelected: true,
       isEditing: false,

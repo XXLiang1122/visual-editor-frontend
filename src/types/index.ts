@@ -27,6 +27,7 @@ export interface Layer {
     imageUrl?: string;
     content?: string;
   };
+  opacity: number;
   style?: FontStyle;
   zIndex: number;
   isSelected?: boolean;

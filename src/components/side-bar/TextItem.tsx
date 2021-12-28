@@ -30,6 +30,7 @@ export default observer(() => {
         fontWeight: 400,
         underline: false
       },
+      opacity: 1,
       zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
       isSelected: true,
       isEditing: true,
