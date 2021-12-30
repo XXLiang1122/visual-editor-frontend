@@ -7,7 +7,7 @@ export default observer(() => {
   const { template, layers, addLayer, resetSelectStatus, editTextLayer } = templateStore
 
   // 新增文本
-  const onUseImage = () => {
+  const onUseText = () => {
     const newLayer: Layer = {
       id: String(Date.now()),
       type: 'text',
@@ -42,7 +42,7 @@ export default observer(() => {
     editTextLayer(newLayer.id)
   }
 
-  return <Button size="large" style={{ width: '100%' }} onClick={onUseImage}>
+  return <Button size="large" style={{ width: '100%' }} onClick={onUseText}>
     添加文本
   </Button>
 })

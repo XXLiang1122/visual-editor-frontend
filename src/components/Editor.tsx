@@ -20,7 +20,7 @@ export default observer(() => {
   // 画布缩放值
   const [scale, setScale] = useState(1)
   // 画布父级容器dom ref
-  const canvasWrapperRef = useRef<HTMLDivElement>(null)
+  const scrollWrapperRef = useRef<HTMLDivElement>(null)
   // 获取模板数据
   const { template, resetSelectStatus, removeLayer, addLayer } = templateStore
 
@@ -29,7 +29,7 @@ export default observer(() => {
 
   // 首次渲染画布尺寸适配
   useEffect(() => {
-    const wrapperEl = canvasWrapperRef.current
+    const wrapperEl = scrollWrapperRef.current
     const canvasWidth = template.global.width
     const canvasHeight = template.global.height
     let scale = 1
@@ -92,7 +92,7 @@ export default observer(() => {
   // 取消所有图层的选中状态包括背景
   const resetStatus = (e: MouseEvent<HTMLElement>) => {
     // self
-    if ((e.target as HTMLElement).id === 'CanvasWrapper') {
+    if ((e.target as HTMLElement).id === 'editorContainer') {
       resetSelectStatus()
       setIsSelectedBackground(false)
     }
@@ -100,13 +100,15 @@ export default observer(() => {
 
   return <Wrapper>
     <ToolBar />
-    <CanvasWrapper ref={canvasWrapperRef} id="CanvasWrapper" onMouseDown={resetStatus}>
-      <BackgroundContext.Provider value={{ isSelectedBackground, setIsSelectedBackground }}>
-        <ScaleContext.Provider value={scale}>
-          <Canvas />
-        </ScaleContext.Provider>
-      </BackgroundContext.Provider>
-    </CanvasWrapper>
+    <ScrollWrapper ref={scrollWrapperRef}>
+      <Container id="editorContainer" onMouseDown={resetStatus}>
+        <BackgroundContext.Provider value={{ isSelectedBackground, setIsSelectedBackground }}>
+          <ScaleContext.Provider value={scale}>
+            <Canvas />
+          </ScaleContext.Provider>
+        </BackgroundContext.Provider>
+      </Container>
+    </ScrollWrapper>
     <Footer scale={scale} setScale={(num) => setScale(num)} />
   </Wrapper>
 })
@@ -117,10 +119,8 @@ const Wrapper = styled.div`
   overflow: hidden;
 `
 
-const CanvasWrapper = styled.div`
+const ScrollWrapper = styled.div`
   position: relative;
-  display: flex;
-  align-items: center;
   width: 100%;
   height: calc(100% - 88px);
   overflow: scroll;
@@ -151,4 +151,12 @@ const CanvasWrapper = styled.div`
       background: #adadad;
     }
   }
+`
+
+const Container = styled.div`
+  position: absolute;
+  display: flex;
+  align-items: center;
+  min-width: 100%;
+  min-height: 100%;
 `

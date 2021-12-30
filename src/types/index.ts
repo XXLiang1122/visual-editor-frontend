@@ -29,6 +29,7 @@ export interface Layer {
   };
   opacity: number;
   style?: FontStyle;
+  clip?: ImageClip;
   zIndex: number;
   isSelected?: boolean;
   isHover?: boolean;
@@ -47,6 +48,23 @@ export interface FontStyle {
   underline: boolean;
 }
 
+export interface ImageClip {
+  width: number;
+  height: number;
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+  pre: {
+    width: number;
+    height: number;
+    top: number;
+    left: number;
+    right: number;
+    bottom: number;
+  }
+}
+
 export type LayerType = 'image' | 'text'
 export type Align = 'left' | 'center' | 'right' | 'justify'
 
@@ -55,4 +73,20 @@ export enum LAYER_TYPE {
   IMAGE = 'image',
   TEXT = 'text',
   BACKGROUND = 'background'
+}
+
+export enum POINT_TYPE {
+  TL = 'topLeft',
+  TR = 'topRight',
+  BL = 'bottomLeft',
+  BR = 'bottomRight',
+  T = 'top',
+  B = 'bottom',
+  L = 'left',
+  R = 'right'
+}
+
+export interface Coords {
+  x: number;
+  y: number;
 }

@@ -1,35 +1,15 @@
-import { Layer } from 'types';
+import { Layer, POINT_TYPE, Coords } from 'types';
 import { MouseEvent, useContext, useState, useEffect, useCallback } from "react";
 import styled from "@emotion/styled";
 import { ScaleContext } from 'store/context';
 import { MouseEvents } from 'utils/mouseEvent';
-import { getCenterCoords, calcRotatedCoords } from 'utils';
+import { normalResize, rotateResize } from 'utils/resizeLayer'
+import { clipImage, updateImageClip } from 'utils/clipImage'
 import rotateIcon from 'assets/rotate.svg';
 import lockIcon from 'assets/lock.svg';
 import { templateStore } from 'store/template';
 import { cloneDeep } from 'lodash';
 import { observer } from 'mobx-react';
-
-enum POINT_TYPE {
-  TL = 'topLeft',
-  TR = 'topRight',
-  BL = 'bottomLeft',
-  BR = 'bottomRight',
-  T = 'top',
-  B = 'bottom',
-  L = 'left',
-  R = 'right'
-}
-
-interface Coords {
-  x: number;
-  y: number;
-}
-
-const MIN_SIZE = {
-  width: 10,
-  height: 10
-}
 
 // 初始的指针角度（左上、上、右上、右）
 const INIT_ANGLE = [0, 45, 90, 135]
@@ -58,79 +38,37 @@ export default observer(({ info }: { info: Layer; }) => {
   // 调整大小 无旋转
   const resizeNormal = (e: MouseEvent<HTMLElement>, point: POINT_TYPE) => {
     const idx = layers.findIndex(layer => layer.id === info.id)
-    // const layer = cloneDeep(layers[idx])
 
     if (idx > -1) {
       new MouseEvents(e, (payload) => {
         const layer = cloneDeep(layers[idx])
 
-        const { x, y } = payload.diff
-        const whRatio = layer.width / layer.height
-        let { x: newX, y: newY } = layer.position
-        let { width: newWidth, height: newHeight } = layer
-        switch (point) {
-          case POINT_TYPE.TL: {
-            const height = layer.height
-            newWidth -= x / scale
-            newX += x / scale
-            newHeight = newWidth / whRatio
-            newY -= newHeight - height
-            break
-          }
-          case POINT_TYPE.TR: {
-            const height = layer.height
-            newWidth += x / scale
-            newHeight = newWidth / whRatio
-            newY -= newHeight - height
-            break
-          }
-          case POINT_TYPE.BL: {
-            newWidth -= x / scale
-            newX += x / scale
-            newHeight = newWidth / whRatio
-            break
-          }
-          case POINT_TYPE.BR: {
-            newWidth += x / scale
-            newHeight = newWidth / whRatio
-            break
-          }
-          case POINT_TYPE.T: {
-            newHeight -= y / scale
-            newY += y / scale
-            break
-          }
-          case POINT_TYPE.B: {
-            newHeight += y / scale
-            break
-          }
-          case POINT_TYPE.L: {
-            newWidth -= x / scale
-            newX += x / scale
-            break
-          }
-          case POINT_TYPE.R: {
-            newWidth += x / scale
-            break
+        const oldHeight = layer.height
+        const oldWidth = layer.width
+
+        // 普通拖拽框大小
+        let res = normalResize(layer, point, payload.diff, scale, true)
+
+        // 处理文本框缩放
+        if (res.type === 'text') {
+          if (res.height !== oldHeight && res.scale) {
+            res.scale *= res.height / oldHeight
           }
         }
-
-        if ((newWidth > MIN_SIZE.width && newHeight > MIN_SIZE.height) || newWidth > layer.width || newHeight > layer.height) {
-          if (layer.type === 'text') {
-            if (layer.height !== newHeight && layer.scale) {
-              layer.scale *= newHeight / layer.height
-            }
-          }
-
-          layer.width = newWidth
-          layer.height = newHeight
-          layer.position.x = newX
-          layer.position.y = newY
+        // 处理图片裁剪
+        if (res.type === 'image') {
+          res = clipImage(res, point, oldWidth, oldHeight)
         }
 
-        setLayer(layer)
+        setLayer(res)
         setIsMoving(true)
       }, () => {
+        let layer = cloneDeep(layers[idx])
+        if (layer.type === 'image') {
+          // 更新图片裁剪信息
+          layer = updateImageClip(layer)
+          setLayer(layer)
+        }
         setIsMoving(false)
       })
     }
@@ -160,7 +98,6 @@ export default observer(({ info }: { info: Layer; }) => {
 
     const whRatio = info.width / info.height
     const idx = layers.findIndex(layer => layer.id === info.id)
-    // const layer = cloneDeep(layers[idx])
 
     new MouseEvents(e, ({ curCoords }: { curCoords: Coords }) => {
       const layer = cloneDeep(layers[idx])
@@ -171,250 +108,31 @@ export default observer(({ info }: { info: Layer; }) => {
       }
 
       const oldHeight = layer.height
+      const oldWidth = layer.width
 
-      switch (point) {
-        case POINT_TYPE.TL: {
-          // 根据鼠标当前位置和对称点获取最新中心点
-          let newCenterPoint = getCenterCoords(curPoint, symmetricPoint)
-          // 获取旋转前的左上角坐标
-          let newOriginCurPoint = calcRotatedCoords(curPoint, newCenterPoint, -info.rotate)
-          // 获取旋转前的对称点坐标
-          let newOriginSymmetricPoint = calcRotatedCoords(symmetricPoint, newCenterPoint, -info.rotate)
-  
-          let newWidth = newOriginSymmetricPoint.x - newOriginCurPoint.x
-          let newHeight = newOriginSymmetricPoint.y - newOriginCurPoint.y
-  
-          // 获取等比缩放计算后的坐标
-          if (newWidth / newHeight > whRatio) {
-            newOriginCurPoint.x += Math.abs(newWidth - newHeight * whRatio)
-          } else {
-            newOriginCurPoint.y += Math.abs(newHeight - newWidth / whRatio)
-          }
-  
-          // 由于现在求的未旋转前的坐标是以没按比例缩减宽高前的坐标来计算的
-          // 所以缩减宽高后，需要按照原来的中心点旋转回去，获得缩减宽高并旋转后对应的坐标
-          // 然后以这个坐标和对称点获得新的中心点，并重新计算未旋转前的坐标
-          const latestOriginCurPoint = calcRotatedCoords(newOriginCurPoint, newCenterPoint, info.rotate)
-          newCenterPoint = getCenterCoords(latestOriginCurPoint, symmetricPoint)
-          newOriginCurPoint = calcRotatedCoords(latestOriginCurPoint, newCenterPoint, -info.rotate)
-          newOriginSymmetricPoint = calcRotatedCoords(symmetricPoint, newCenterPoint, -info.rotate)
-  
-          newWidth = newOriginSymmetricPoint.x - newOriginCurPoint.x
-          newHeight = newOriginSymmetricPoint.y - newOriginCurPoint.y
-  
-          if (newWidth / scale > MIN_SIZE.width && newHeight / scale > MIN_SIZE.height) {
-            layer.width = newWidth / scale
-            layer.height = newHeight / scale
-            layer.position.y = newOriginCurPoint.y / scale
-            layer.position.x = newOriginCurPoint.x / scale
-          }
-          break
-        }
+      // 处理旋转的拖拽
+      let res = rotateResize(point, curPoint, symmetricPoint, pointCenter, info, layer, whRatio, scale, true)
 
-        case POINT_TYPE.TR: {
-          let newCenterPoint = getCenterCoords(curPoint, symmetricPoint)
-          // 获取旋转前的右上角坐标
-          let newOriginCurPoint = calcRotatedCoords(curPoint, newCenterPoint, -info.rotate)
-          let newOriginSymmetricPoint = calcRotatedCoords(symmetricPoint, newCenterPoint, -info.rotate)
-  
-          let newWidth = newOriginCurPoint.x - newOriginSymmetricPoint.x
-          let newHeight = newOriginSymmetricPoint.y - newOriginCurPoint.y
-  
-          if (newWidth / newHeight > whRatio) {
-            newOriginCurPoint.x -= Math.abs(newWidth - newHeight * whRatio)
-          } else {
-            newOriginCurPoint.y += Math.abs(newHeight - newWidth / whRatio)
-          }
-  
-          const latestOriginCurPoint = calcRotatedCoords(newOriginCurPoint, newCenterPoint, info.rotate)
-          newCenterPoint = getCenterCoords(latestOriginCurPoint, symmetricPoint)
-          newOriginCurPoint = calcRotatedCoords(latestOriginCurPoint, newCenterPoint, -info.rotate)
-          newOriginSymmetricPoint = calcRotatedCoords(symmetricPoint, newCenterPoint, -info.rotate)
-  
-          newWidth = newOriginCurPoint.x - newOriginSymmetricPoint.x
-          newHeight = newOriginSymmetricPoint.y - newOriginCurPoint.y
-  
-          if (newWidth / scale > MIN_SIZE.width && newHeight / scale > MIN_SIZE.height) {
-            layer.width = newWidth / scale
-            layer.height = newHeight / scale
-            layer.position.y = newOriginCurPoint.y / scale
-            layer.position.x = newOriginSymmetricPoint.x / scale
-          }
-          break
-        }
-  
-        case POINT_TYPE.BR: {
-          let newCenterPoint = getCenterCoords(curPoint, symmetricPoint)
-          // 获取旋转前的右下角坐标
-          let newOriginCurPoint = calcRotatedCoords(curPoint, newCenterPoint, -info.rotate)
-          let newOriginSymmetricPoint = calcRotatedCoords(symmetricPoint, newCenterPoint, -info.rotate)
-  
-          let newWidth = newOriginCurPoint.x - newOriginSymmetricPoint.x
-          let newHeight = newOriginCurPoint.y - newOriginSymmetricPoint.y
-  
-          if (newWidth / newHeight > whRatio) {
-            newOriginCurPoint.x -= Math.abs(newWidth - newHeight * whRatio)
-          } else {
-            newOriginCurPoint.y -= Math.abs(newHeight - newWidth / whRatio)
-          }
-  
-          const latestOriginCurPoint = calcRotatedCoords(newOriginCurPoint, newCenterPoint, info.rotate)
-          newCenterPoint = getCenterCoords(latestOriginCurPoint, symmetricPoint)
-          newOriginCurPoint = calcRotatedCoords(latestOriginCurPoint, newCenterPoint, -info.rotate)
-          newOriginSymmetricPoint = calcRotatedCoords(symmetricPoint, newCenterPoint, -info.rotate)
-  
-          newWidth = newOriginCurPoint.x - newOriginSymmetricPoint.x
-          newHeight = newOriginCurPoint.y - newOriginSymmetricPoint.y
-  
-          if (newWidth / scale > MIN_SIZE.width && newHeight / scale > MIN_SIZE.height) {
-            layer.width = newWidth / scale
-            layer.height = newHeight / scale
-            layer.position.y = newOriginSymmetricPoint.y / scale
-            layer.position.x = newOriginSymmetricPoint.x / scale
-          }
-          break
-        }
-  
-        case POINT_TYPE.BL: {
-          let newCenterPoint = getCenterCoords(curPoint, symmetricPoint)
-          // 获取旋转前的左下角坐标
-          let newOriginCurPoint = calcRotatedCoords(curPoint, newCenterPoint, -info.rotate)
-          let newOriginSymmetricPoint = calcRotatedCoords(symmetricPoint, newCenterPoint, -info.rotate)
-  
-          let newWidth = newOriginSymmetricPoint.x - newOriginCurPoint.x
-          let newHeight = newOriginCurPoint.y - newOriginSymmetricPoint.y
-  
-          if (newWidth / newHeight > whRatio) {
-            newOriginCurPoint.x += Math.abs(newWidth - newHeight * whRatio)
-          } else {
-            newOriginCurPoint.y -= Math.abs(newHeight - newWidth / whRatio)
-          }
-  
-          const latestOriginCurPoint = calcRotatedCoords(newOriginCurPoint, newCenterPoint, info.rotate)
-          newCenterPoint = getCenterCoords(latestOriginCurPoint, symmetricPoint)
-          newOriginCurPoint = calcRotatedCoords(latestOriginCurPoint, newCenterPoint, -info.rotate)
-          newOriginSymmetricPoint = calcRotatedCoords(symmetricPoint, newCenterPoint, -info.rotate)
-  
-          newWidth = newOriginSymmetricPoint.x - newOriginCurPoint.x
-          newHeight = newOriginCurPoint.y - newOriginSymmetricPoint.y
-  
-          if (newWidth / scale > MIN_SIZE.width && newHeight / scale > MIN_SIZE.height) {
-            layer.width = newWidth / scale
-            layer.height = newHeight / scale
-            layer.position.y = newOriginSymmetricPoint.y / scale
-            layer.position.x = newOriginCurPoint.x / scale
-          }
-          break
-        }
-  
-        case POINT_TYPE.T:
-        case POINT_TYPE.B: {
-          // 由于用户拉伸时是以任意角度拉伸的，所以在求得旋转前的坐标时，只取 y 坐标（这里的 x 坐标可能是任意值），x 坐标用 pointCenter 的。
-          // 这个中心点（第二个参数）用 pointCenter, center, symmetricPoint 都可以，只要他们在一条直线上就行
-          const newOriginCurPoint = calcRotatedCoords(curPoint, pointCenter, -info.rotate)
-  
-          // 算出旋转前 y 坐标，再用 initCurPoint 的 x 坐标，重新计算它们旋转后对应的坐标
-          const latestCurPoint = calcRotatedCoords({
-            x: pointCenter.x,
-            y: newOriginCurPoint.y
-          }, pointCenter, info.rotate)
-  
-          // 用旋转后的坐标和对称点算出新的高度（勾股定理）
-          const newHeight = Math.sqrt((latestCurPoint.x - symmetricPoint.x) ** 2 + (latestCurPoint.y - symmetricPoint.y) ** 2)
-  
-          const newCenter = {
-            x: latestCurPoint.x - (latestCurPoint.x - symmetricPoint.x) / 2,
-            y: latestCurPoint.y + (symmetricPoint.y - latestCurPoint.y) / 2
-          }
-  
-          // 是否反向拉伸了
-          let isReverse = false
-          const angle = (info.rotate + 360) % 360
-          // 禁止反向拉伸
-          if (point === POINT_TYPE.T) {
-            if ((angle >= 0 && angle <= 90) || (angle >= 270 && angle <= 360)) {
-              if (latestCurPoint.y >= symmetricPoint.y) {
-                isReverse = true
-              }
-            } else if (latestCurPoint.y <= symmetricPoint.y) {
-              isReverse = true
-            }
-          }
-          if (point === POINT_TYPE.B) {
-            if (angle >= 90 && angle <= 270) {
-              if (latestCurPoint.y >= symmetricPoint.y) {
-                isReverse = true
-              }
-            } else if (latestCurPoint.y <= symmetricPoint.y) {
-              isReverse = true
-            }
-          }
-  
-          if (newHeight / scale > MIN_SIZE.height && !isReverse) {
-            layer.height = newHeight / scale
-            layer.position.y = (newCenter.y - (newHeight / 2)) / scale
-            layer.position.x = newCenter.x / scale - (layer.width / 2)
-          }
-          break
-        }
-  
-        case POINT_TYPE.L:
-        case POINT_TYPE.R: {
-          const newOriginCurPoint = calcRotatedCoords(curPoint, pointCenter, -info.rotate)
-  
-          const latestCurPoint = calcRotatedCoords({
-            x: newOriginCurPoint.x,
-            y: pointCenter.y
-          }, pointCenter, info.rotate)
-  
-          const newWidth = Math.sqrt((latestCurPoint.x - symmetricPoint.x) ** 2 + (latestCurPoint.y - symmetricPoint.y) ** 2)
-  
-          const newCenter = {
-            x: latestCurPoint.x - (latestCurPoint.x - symmetricPoint.x) / 2,
-            y: latestCurPoint.y + (symmetricPoint.y - latestCurPoint.y) / 2
-          }
-  
-          // 是否反向拉伸了
-          let isReverse = false
-          const angle = (info.rotate + 360) % 360
-          // 禁止反向拉伸
-          if (point === POINT_TYPE.L) {
-            if ((angle >= 0 && angle <= 90) || (angle >= 270 && angle <= 360)) {
-              if (latestCurPoint.x >= symmetricPoint.x) {
-                isReverse = true
-              }
-            } else if (latestCurPoint.x <= symmetricPoint.x) {
-              isReverse = true
-            }
-          }
-          if (point === POINT_TYPE.R) {
-            if (angle >= 90 && angle <= 270) {
-              if (latestCurPoint.x >= symmetricPoint.x) {
-                isReverse = true
-              }
-            } else if (latestCurPoint.x <= symmetricPoint.x) {
-              isReverse = true
-            }
-          }
-  
-          if (newWidth / scale > MIN_SIZE.width && !isReverse) {
-            layer.width = newWidth / scale
-            layer.position.y = newCenter.y / scale - (layer.height / 2)
-            layer.position.x = (newCenter.x - (newWidth / 2)) / scale
-          }
-          break
+      // 处理文本框缩放
+      if (res.type === 'text') {
+        if (res.height !== oldHeight && res.scale) {
+          res.scale *= res.height / oldHeight
         }
       }
-
-      if (layer.type === 'text') {
-        if (layer.height !== oldHeight && layer.scale) {
-          layer.scale *= layer.height / oldHeight
-        }
+      // 处理图片裁剪
+      if (res.type === 'image') {
+        res = clipImage(res, point, oldWidth, oldHeight)
       }
 
-      setLayer(layer)
+      setLayer(res)
       setIsMoving(true)
     }, () => {
+      let layer = cloneDeep(layers[idx])
+      if (layer.type === 'image') {
+        // 更新图片裁剪信息
+        layer = updateImageClip(layer)
+        setLayer(layer)
+      }
       setIsMoving(false)
     })
   }

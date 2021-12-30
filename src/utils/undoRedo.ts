@@ -32,7 +32,7 @@ export default function undoRedo () {
     historyCache.splice(pointer + 1, historyCache.length)
     setCanUseUndo(true)
     setCanUseRedo(false)
-    if (historyCache.length > 100) {
+    if (historyCache.length > 50) {
       historyCache.shift()
       pointer--
     }

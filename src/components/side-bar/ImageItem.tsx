@@ -27,6 +27,22 @@ export default observer(({ image }: { image: ImageInfo }) => {
       source: {
         imageUrl: image.webformatURL
       },
+      clip: {
+        width: image.webformatWidth,
+        height: image.webformatHeight,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        pre: {
+          width: image.webformatWidth,
+          height: image.webformatHeight,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }
+      },
       opacity: 1,
       zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
       isSelected: true,

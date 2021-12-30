@@ -8,6 +8,7 @@ import { templateStore } from 'store/template';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import TextEditor from './layer/TextEditor';
+import ImageLayer from './layer/Image'
 import { createPortal } from "react-dom";
 
 interface Props {
@@ -65,6 +66,22 @@ export default observer(() => {
         source: {
           imageUrl: url
         },
+        clip: {
+          width: width,
+          height: height,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pre: {
+            width: width,
+            height: height,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }
+        },
         opacity: 1,
         zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
         isSelected: true,
@@ -121,7 +138,7 @@ export default observer(() => {
           // 图片
           if (layer.type === 'image') {
             return <Layer key={layer.id} info={layer}>
-              <Img src={toJS(layer.source.imageUrl)} draggable="false" />
+              <ImageLayer layer={toJS(layer)} />
             </Layer>
           }
           // 文字
@@ -161,11 +178,6 @@ function TransportEditor ({ children }: { children: JSX.Element }) {
     document.querySelector('#textControl') as HTMLDivElement
   )
 }
-
-const Img = styled.img`
-  width: 100%;
-  height: 100%;
-`
 
 const Background = styled.div<{ color: string; }>(
   {
