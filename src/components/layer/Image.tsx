@@ -2,13 +2,19 @@ import { observer } from 'mobx-react';
 import styled from "@emotion/styled";
 import { Layer } from 'types';
 import { templateStore } from 'store/template';
-import { useEffect } from 'react';
+import { MouseEvent } from 'react';
 
 export default observer(({ layer }: { layer: Layer }) => {
-  const { setLayer } = templateStore
+  const { editTextLayer } = templateStore
+
+  const onClipImage = (e: MouseEvent) => {
+    e.stopPropagation()
+    editTextLayer(layer.id)
+
+  }
 
   return (
-    <ImgWrapper>
+    <ImgWrapper onDoubleClick={onClipImage}>
       <div style={{
         position: 'absolute',
         width: `${layer.clip?.width}px`,

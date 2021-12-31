@@ -9,6 +9,7 @@ import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import TextEditor from './layer/TextEditor';
 import ImageLayer from './layer/Image'
+import ClipImage from "./ClipImage";
 import { createPortal } from "react-dom";
 
 interface Props {
@@ -137,7 +138,12 @@ export default observer(() => {
         template.layers.map(layer => {
           // 图片
           if (layer.type === 'image') {
-            return <Layer key={layer.id} info={layer}>
+            return layer.isEditing ?
+            <TransportImage key={layer.id}>
+              <ClipImage info={toJS(layer)} />
+            </TransportImage>
+            :
+            <Layer key={layer.id} info={layer}>
               <ImageLayer layer={toJS(layer)} />
             </Layer>
           }
@@ -176,6 +182,14 @@ function TransportEditor ({ children }: { children: JSX.Element }) {
   return createPortal(
     children,
     document.querySelector('#textControl') as HTMLDivElement
+  )
+}
+
+// 传送门
+function TransportImage ({ children }: { children: JSX.Element }) {
+  return createPortal(
+    children,
+    document.querySelector('#editorContainer') as HTMLDivElement
   )
 }
 

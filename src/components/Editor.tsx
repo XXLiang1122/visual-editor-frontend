@@ -27,8 +27,8 @@ export default observer(() => {
   // 是否选中背景
   const [isSelectedBackground, setIsSelectedBackground] = useState(false)
 
-  // 首次渲染画布尺寸适配
-  useEffect(() => {
+  // 自适应
+  const responsive = useCallback(() => {
     const wrapperEl = scrollWrapperRef.current
     const canvasWidth = template.global.width
     const canvasHeight = template.global.height
@@ -40,7 +40,12 @@ export default observer(() => {
       scale = (wrapperEl.clientHeight - 100) / canvasHeight
     }
     setScale(scale)
-  }, [template.global.width, template.global.height])
+  }, [template.global.height, template.global.width])
+
+  // 首次渲染画布尺寸适配
+  useEffect(() => {
+    responsive()
+  }, [responsive])
 
   // 键盘事件监听
   const onKeyboardListener = useCallback((e: KeyboardEvent) => {
@@ -109,7 +114,7 @@ export default observer(() => {
         </BackgroundContext.Provider>
       </Container>
     </ScrollWrapper>
-    <Footer scale={scale} setScale={(num) => setScale(num)} />
+    <Footer scale={scale} setScale={(num) => setScale(num)} responsive={responsive} />
   </Wrapper>
 })
 

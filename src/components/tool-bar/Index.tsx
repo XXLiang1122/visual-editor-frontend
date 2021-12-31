@@ -284,7 +284,7 @@ export default observer(() => {
     </>
   )
 
-  return <ToolBarWrapper>
+  return <ToolBarWrapper id="toolBar">
     <ItemGroup className={isLocked ? 'locked' : ''}>
       {/* 画布尺寸 */}
       {[LAYER_TYPE.EMPTY].includes(layerType) &&
@@ -460,6 +460,7 @@ export default observer(() => {
 })
 
 const ToolBarWrapper = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
