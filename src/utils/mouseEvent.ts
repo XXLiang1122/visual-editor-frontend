@@ -29,9 +29,9 @@ export class MouseEvents {
   private mouseMove = (event: any) => {
     const diffX = event.clientX - this.preCoords.x
     const diffY = event.clientY - this.preCoords.y
-    this.preCoords = {
-      x: event.clientX,
-      y: event.clientY
+    const preCoords = {
+      x: this.preCoords.x,
+      y: this.preCoords.y
     }
     this.handleMove({
       diff: {
@@ -39,8 +39,13 @@ export class MouseEvents {
         y: diffY
       },
       startCoords: this.startCoords,
-      curCoords: this.preCoords
+      curCoords: this.preCoords,
+      preCoords: preCoords
     })
+    this.preCoords = {
+      x: event.clientX,
+      y: event.clientY
+    }
   }
 
   private mouseDown = (e: MouseEventType<HTMLElement>) => {

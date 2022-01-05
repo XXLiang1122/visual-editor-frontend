@@ -8,7 +8,6 @@ import { MouseEvents } from 'utils/mouseEvent';
 import { normalResize, rotateResize } from 'utils/resizeLayer'
 import resizeIcon from 'assets/resize.svg'
 import { cloneDeep } from 'lodash'
-import { message } from 'antd';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { createPortal } from "react-dom";
 
@@ -121,6 +120,7 @@ export default observer(({ info }: { info: Layer }) => {
     const _layer = cloneDeep(layer)
     new MouseEvents(e, (payload) => {
       preLayer = cloneDeep(_layer)
+
       // 普通拖拽框大小
       const newLayer = normalResize(_layer, point, payload.diff, scale, false)
       const res = clipHandle(newLayer, point)
@@ -132,6 +132,7 @@ export default observer(({ info }: { info: Layer }) => {
   }
 
   // 调整大小 有旋转
+  // TODO: 拖拽优化
   const resizeWithRotate = (e: MouseEvent<HTMLElement>, point: POINT_TYPE) => {
     const _layer = cloneDeep(layer)
 
@@ -179,7 +180,6 @@ export default observer(({ info }: { info: Layer }) => {
   // 调整大小
   const resize = (e: MouseEvent<HTMLElement>, point: POINT_TYPE) => {
     e.stopPropagation()
-    if (true) {message.info('实现中...'); return}
     if (info.rotate === 0) {
       resizeNormal(e, point)
     } else {
@@ -188,38 +188,34 @@ export default observer(({ info }: { info: Layer }) => {
   }
 
   // 拖拽图片位置
+  // TODO: 旋转后拖拽优化
   const onDragImage = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
-    if (true) {message.info('实现中...'); return}
-    if (info.rotate === 0) {
-      // 初始化拖拽事件
-      new MouseEvents(e, ({ diff }: { diff: Coords }) => {
-        const { clip } = layer
-        if (clip) {
-          const newTop = clip.top - diff.y / scale * (layer.reverse?.y || 1)
-          const newLeft = clip.left - diff.x / scale * (layer.reverse?.x || 1)
-          const newRight = clip.right + diff.x / scale * (layer.reverse?.x || 1)
-          const newBottom = clip.bottom + diff.y / scale * (layer.reverse?.y || 1)
+    // 初始化拖拽事件
+    new MouseEvents(e, ({ diff }: { diff: Coords }) => {
+      const { clip } = layer
+      if (clip) {
+        const newTop = clip.top - diff.y / scale * (layer.reverse?.y || 1)
+        const newLeft = clip.left - diff.x / scale * (layer.reverse?.x || 1)
+        const newRight = clip.right + diff.x / scale * (layer.reverse?.x || 1)
+        const newBottom = clip.bottom + diff.y / scale * (layer.reverse?.y || 1)
 
-          if (newTop >= 0 && newBottom >= 0) {
-            clip.top = newTop
-            clip.bottom = newBottom
-            clip.pre.top = newTop
-            clip.pre.bottom = newBottom
-            setLayerInfo(Object.assign({}, layer))
-          }
-          if (newRight >= 0 && newLeft >= 0) {
-            clip.left = newLeft
-            clip.right = newRight
-            clip.pre.left = newLeft
-            clip.pre.right = newRight
-            setLayerInfo(Object.assign({}, layer))
-          }
+        if (newTop >= 0 && newBottom >= 0) {
+          clip.top = newTop
+          clip.bottom = newBottom
+          clip.pre.top = newTop
+          clip.pre.bottom = newBottom
+          setLayerInfo(Object.assign({}, layer))
         }
-      })
-    } else {
-
-    }
+        if (newRight >= 0 && newLeft >= 0) {
+          clip.left = newLeft
+          clip.right = newRight
+          clip.pre.left = newLeft
+          clip.pre.right = newRight
+          setLayerInfo(Object.assign({}, layer))
+        }
+      }
+    })
   }
 
   return (
@@ -259,15 +255,20 @@ export default observer(({ info }: { info: Layer }) => {
           }}>
             {/* 裁剪边框 */}
             <BorderEl 
+              className={layer.reverse?.x === -1 || layer.reverse?.y === -1 ? 'hidden' : ''}
               style={{
                 width: layer.width * scale,
                 height: layer.height * scale,
                 transform: `translate(${layer.position.x * scale}px, ${layer.position.y * scale}px) rotate(${layer.rotate}deg)`
               }}>
-              <AngleTL onMouseDown={e => resize(e, POINT_TYPE.TL)}><img src={resizeIcon} alt="" /></AngleTL>
-              <AngleTR onMouseDown={e => resize(e, POINT_TYPE.TR)}><img src={resizeIcon} alt="" /></AngleTR>
-              <AngleBL onMouseDown={e => resize(e, POINT_TYPE.BL)}><img src={resizeIcon} alt="" /></AngleBL>
-              <AngleBR onMouseDown={e => resize(e, POINT_TYPE.BR)}><img src={resizeIcon} alt="" /></AngleBR>
+              {(layer.reverse?.x !== -1 && layer.reverse?.y !== -1) && <>
+                  <AngleTL onMouseDown={e => resize(e, POINT_TYPE.TL)}><img src={resizeIcon} alt="" /></AngleTL>
+                  <AngleTR onMouseDown={e => resize(e, POINT_TYPE.TR)}><img src={resizeIcon} alt="" /></AngleTR>
+                  <AngleBL onMouseDown={e => resize(e, POINT_TYPE.BL)}><img src={resizeIcon} alt="" /></AngleBL>
+                  <AngleBR onMouseDown={e => resize(e, POINT_TYPE.BR)}><img src={resizeIcon} alt="" /></AngleBR>
+                </>
+              }
+              <Line1 /><Line2 /><Line3 /><Line4 />
             </BorderEl>
 
             {/* 背景拖动层 */}
@@ -383,6 +384,12 @@ const BorderEl = styled.div`
   pointer-events: none;
   z-index: 1;
 
+  &.hidden {
+    &:after {
+      opacity: 0;
+    }
+  }
+
   &:after {
     content: '';
     position: absolute;
@@ -392,6 +399,39 @@ const BorderEl = styled.div`
     bottom: -1px;
     border: 2px solid #00c4cc;
   }
+`
+
+const Line = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background-color: #fff;
+`
+
+const Line1 = styled(Line)`
+  left: 33%;
+  transform: scaleX(.7);
+`
+
+const Line2 = styled(Line)`
+  left: 66%;
+  transform: scaleX(.7);
+`
+
+const Line3 = styled(Line)`
+  top: 33%;
+  width: 100%;
+  height: 1px;
+  transform: scaleY(.7);
+`
+
+const Line4 = styled(Line)`
+  top: 66%;
+  width: 100%;
+  height: 1px;
+  transform: scaleY(.7);
 `
 
 const ResizeAngle = styled.span`
