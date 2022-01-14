@@ -4,7 +4,7 @@ import { Button } from 'antd';
 import { observer } from 'mobx-react';
 
 export default observer(() => {
-  const { template, layers, addLayer, resetSelectStatus, editTextLayer } = templateStore
+  const { template, layers, addLayer, resetSelectStatus, setEditStatus } = templateStore
 
   // 新增文本
   const onUseText = () => {
@@ -39,7 +39,7 @@ export default observer(() => {
     }
     resetSelectStatus()
     addLayer(newLayer)
-    editTextLayer(newLayer.id)
+    setEditStatus(newLayer.id)
   }
 
   return <Button size="large" style={{ width: '100%' }} onClick={onUseText}>

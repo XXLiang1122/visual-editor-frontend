@@ -43,6 +43,7 @@ export default observer(() => {
     setLayers,
     setLayerLevel,
     removeLayer,
+    setEditStatus,
     setLayerLock,
     setBackgroundColor,
     setNeedUpdateLayerHeight
@@ -183,6 +184,11 @@ export default observer(() => {
       }
       setLayer(layer)
     }
+  }
+
+  // 裁剪图片
+  const clipImage = () => {
+    setEditStatus(activeLayer?.id || '')
   }
 
   // 改变层级
@@ -384,6 +390,11 @@ export default observer(() => {
           >
             <span className="text">翻转</span>
           </Dropdown>
+        </ToolItem>
+      }
+      {[LAYER_TYPE.IMAGE].includes(layerType) &&
+        <ToolItem onClick={clipImage}>
+          <span className="text">裁剪</span>
         </ToolItem>
       }
     </ItemGroup>

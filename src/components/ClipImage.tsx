@@ -158,13 +158,13 @@ export default observer(({ info }: { info: Layer }) => {
 
     const whRatio = _layer.width / _layer.height
 
-    new MouseEvents(e, ({ curCoords }: { curCoords: Coords }) => {
+    new MouseEvents(e, ({ curCoords }: { curCoords: Coords; }) => {
       const curPoint = {
         x: curCoords.x - Number(canvasRect.left),
         y: curCoords.y - Number(canvasRect.top)
       }
 
-      preLayer = cloneDeep(_layer)
+      preLayer = cloneDeep(layer)
 
       // 处理旋转的拖拽
       const newLayer = rotateResize(point, curPoint, symmetricPoint, pointCenter, _layer, layer, whRatio, scale, false)

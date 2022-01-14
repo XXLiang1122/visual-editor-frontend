@@ -2,6 +2,21 @@ import { Layer, POINT_TYPE } from 'types';
 
 // 计算处理图片裁剪
 export const clipImage = (layer: Layer, point: POINT_TYPE, oldWidth: number, oldHeight: number): Layer => {
+  // 判断是否有翻转，翻转后方向互换
+  if (layer.reverse?.x === -1) {
+    if (point === POINT_TYPE.L) {
+      point = POINT_TYPE.R
+    } else if (point === POINT_TYPE.R) {
+      point = POINT_TYPE.L
+    }
+  }
+  if (layer.reverse?.y === -1) {
+    if (point === POINT_TYPE.T) {
+      point = POINT_TYPE.B
+    } else if (point === POINT_TYPE.B) {
+      point = POINT_TYPE.T
+    }
+  }
   if (layer.clip) {
     const imageWhRatio = layer.clip.pre.width / layer.clip.pre.height
     switch (point) {

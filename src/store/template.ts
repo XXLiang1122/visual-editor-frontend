@@ -40,6 +40,8 @@ export const templateStore = observable({
       delete l.isSelected
       delete l.isEditing
       delete l.scale
+      // @ts-ignore
+      delete l.clip?.pre
       return l
     })
     return _template
@@ -124,8 +126,8 @@ export const templateStore = observable({
     this.layerType = type
   },
 
-  // 设置文字图层编辑状态
-  editTextLayer (id: string) {
+  // 设置图层编辑状态(文字编辑、图片裁剪)
+  setEditStatus (id: string) {
     if (this.layers.some(l => l.id === id && l.isLocked)) return
     this.layers.forEach(layer => {
       layer.isEditing = layer.id === id
@@ -190,7 +192,7 @@ export const templateStore = observable({
   setLayerLevel: action.bound,
   hoverLayer: action.bound,
   setLayerType: action.bound,
-  editTextLayer: action.bound,
+  setEditStatus: action.bound,
   setLayerLock: action.bound,
   resetSelectStatus: action.bound,
   resetEditStatus: action.bound,

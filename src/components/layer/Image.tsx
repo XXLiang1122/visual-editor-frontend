@@ -5,11 +5,11 @@ import { templateStore } from 'store/template';
 import { MouseEvent } from 'react';
 
 export default observer(({ layer }: { layer: Layer }) => {
-  const { editTextLayer } = templateStore
+  const { setEditStatus } = templateStore
 
   const onClipImage = (e: MouseEvent) => {
     e.stopPropagation()
-    editTextLayer(layer.id)
+    setEditStatus(layer.id)
 
   }
 

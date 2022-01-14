@@ -13,7 +13,7 @@ import { ScaleContext } from 'store/context';
 export default observer(({ layer }: { layer: Layer }) => {
   const editorRef = useRef<HTMLDivElement>(null)
 
-  const { editTextLayer, setLayer, needUpdateLayerHeight, setNeedUpdateLayerHeight, isMoving } = templateStore
+  const { setEditStatus, setLayer, needUpdateLayerHeight, setNeedUpdateLayerHeight, isMoving } = templateStore
   const scale = useContext(ScaleContext)
 
   // quill实例
@@ -105,7 +105,7 @@ export default observer(({ layer }: { layer: Layer }) => {
 
   // 进入编辑状态
   const onEditText = () => {
-    editTextLayer(layer.id)
+    setEditStatus(layer.id)
   }
 
   // 初始化quill实例
