@@ -10,6 +10,8 @@ import { toJS } from 'mobx';
 import TextEditor from './layer/TextEditor';
 import ImageLayer from './layer/Image'
 import ClipImage from "./ClipImage";
+import Rect from './layer/shapes/Rect'
+import Circle from './layer/shapes/Circle'
 import { createPortal } from "react-dom";
 
 interface Props {
@@ -158,6 +160,18 @@ export default observer(() => {
             :
             <Layer key={layer.id} info={layer}>
               <TextEditor layer={toJS(layer)} />
+            </Layer>
+          }
+          // 矩形
+          if (layer.type === 'rect') {
+            return <Layer key={layer.id} info={layer}>
+              <Rect layer={toJS(layer)} />
+            </Layer>
+          }
+          // 圆形
+          if (layer.type === 'circle') {
+            return <Layer key={layer.id} info={layer}>
+              <Circle layer={toJS(layer)} />
             </Layer>
           }
           return <></>

@@ -7,6 +7,7 @@ import { FilterOutlined } from '@ant-design/icons';
 import { Popover, Input, Button } from 'antd';
 import ImageItem from './ImageItem'
 import TextItem from './TextItem'
+import { Rect, Circle } from './Shapes'
 import UploadImage from "./UploadImage";
 
 const { Panel } = Collapse
@@ -95,6 +96,12 @@ export default function Sidebar () {
       <Panel header={<div style={{ width: '300px' }}>文字</div>} key="2">
         <ListContent>
           <TextItem />
+        </ListContent>
+      </Panel>
+      <Panel header={<div style={{ width: '300px' }}>形状</div>} key="3">
+        <ListContent>
+          <Rect />
+          <Circle />
         </ListContent>
       </Panel>
     </Collapse>

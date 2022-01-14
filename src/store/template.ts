@@ -103,10 +103,11 @@ export const templateStore = observable({
     this.layers.forEach(layer => {
       layer.isSelected = layer.id === id
       if (layer.isSelected) {
-        if (layer.type === 'image') {
-          this.setLayerType(LAYER_TYPE.IMAGE)
-        } else if (layer.type === 'text') {
-          this.setLayerType(LAYER_TYPE.TEXT)
+        switch (layer.type) {
+          case 'image': this.setLayerType(LAYER_TYPE.IMAGE); break;
+          case 'text': this.setLayerType(LAYER_TYPE.TEXT); break;
+          case 'rect': this.setLayerType(LAYER_TYPE.RECT); break;
+          case 'circle': this.setLayerType(LAYER_TYPE.CIRCLE); break;
         }
       }
     })

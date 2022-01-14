@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { observer } from 'mobx-react';
 import { templateStore } from 'store/template'
-import { LAYER_TYPE, Align } from 'types'
+import { LAYER_TYPE, Align, RectShape } from 'types'
 import {
   Popover,
   Select,
@@ -26,6 +26,8 @@ import {
   UnlockOutlined
 } from '@ant-design/icons';
 import opacityIcon from 'assets/opacity.svg'
+import borderWidthIcon from 'assets/border-weight.svg'
+import borderStyleIcon from 'assets/border-style.svg'
 import { ChromePicker, ColorResult } from 'react-color';
 import { cloneDeep, isNumber } from "lodash";
 import { FONT_LIST, FONTSIZE_LIST, CANVAS_SIZE_LIST } from 'utils/const'
@@ -73,6 +75,14 @@ export default observer(() => {
   // 当前字体是否有下划线
   const hasUnderline = activeLayer?.style?.underline || false
 
+  // 当前形状
+  let shapeInfo: Partial<RectShape> = {}
+  if (layerType === LAYER_TYPE.CIRCLE) {
+    shapeInfo = activeLayer?.circleInfo as RectShape
+  } else if (layerType === LAYER_TYPE.RECT) {
+    shapeInfo = activeLayer?.rectInfo as RectShape
+  }
+
   // 透明度
   const opacity = activeLayer?.opacity
   
@@ -116,6 +126,88 @@ export default observer(() => {
     // 背景
     if (layerType === LAYER_TYPE.BACKGROUND) {
       setBackgroundColor(rgba)
+    }
+  }
+
+  // 选择形状填充颜色
+  const onFillColorChange = (clr: ColorResult) => {
+    const rgba = `rgba(${clr.rgb.r}, ${clr.rgb.g}, ${clr.rgb.b}, ${clr.rgb.a})`
+    // 矩形
+    if (layerType === LAYER_TYPE.RECT) {
+      const layer = cloneDeep(activeLayer)
+      if (layer?.rectInfo) {
+        layer.rectInfo.fill = rgba
+        setLayer(layer)
+      }
+    }
+    // 圆形
+    if (layerType === LAYER_TYPE.CIRCLE) {
+      const layer = cloneDeep(activeLayer)
+      if (layer?.circleInfo) {
+        layer.circleInfo.fill = rgba
+        setLayer(layer)
+      }
+    }
+  }
+
+  // 选择形状描边颜色
+  const onBorderColorChange = (clr: ColorResult) => {
+    const rgba = `rgba(${clr.rgb.r}, ${clr.rgb.g}, ${clr.rgb.b}, ${clr.rgb.a})`
+    // 矩形
+    if (layerType === LAYER_TYPE.RECT) {
+      const layer = cloneDeep(activeLayer)
+      if (layer?.rectInfo) {
+        layer.rectInfo.borderColor = rgba
+        setLayer(layer)
+      }
+    }
+    // 圆形
+    if (layerType === LAYER_TYPE.CIRCLE) {
+      const layer = cloneDeep(activeLayer)
+      if (layer?.circleInfo) {
+        layer.circleInfo.borderColor = rgba
+        setLayer(layer)
+      }
+    }
+  }
+
+  // 形状描边粗细改变
+  const onBorderWidthChange = (val: number) => {
+    // 矩形
+    if (layerType === LAYER_TYPE.RECT) {
+      const layer = cloneDeep(activeLayer)
+      if (layer?.rectInfo) {
+        layer.rectInfo.borderWidth = val
+        setLayer(layer)
+      }
+    }
+    // 圆形
+    if (layerType === LAYER_TYPE.CIRCLE) {
+      const layer = cloneDeep(activeLayer)
+      if (layer?.circleInfo) {
+        layer.circleInfo.borderWidth = val
+        setLayer(layer)
+      }
+    }
+  }
+
+  // 形状描边样式改变
+  const onBorderStyleChange = (val: string) => {
+    // 矩形
+    if (layerType === LAYER_TYPE.RECT) {
+      const layer = cloneDeep(activeLayer)
+      if (layer?.rectInfo) {
+        layer.rectInfo.borderStyle = val
+        setLayer(layer)
+      }
+    }
+    // 圆形
+    if (layerType === LAYER_TYPE.CIRCLE) {
+      const layer = cloneDeep(activeLayer)
+      if (layer?.circleInfo) {
+        layer.circleInfo.borderStyle = val
+        setLayer(layer)
+      }
     }
   }
 
@@ -316,6 +408,91 @@ export default observer(() => {
           </Popover>
         </ToolItem>
       }
+
+      {/* 形状填充颜色 */}
+      {[LAYER_TYPE.RECT, LAYER_TYPE.CIRCLE].includes(layerType) &&
+        <ToolItem>
+          <Popover
+            content={<ChromePicker color={shapeInfo.fill} onChange={onFillColorChange} />}
+            trigger="click"
+            placement="bottomLeft"
+          >
+            <ColorItem style={{ backgroundColor: shapeInfo.fill }} />
+          </Popover>
+        </ToolItem>
+      }
+
+      {/* 形状描边颜色 */}
+      {[LAYER_TYPE.RECT, LAYER_TYPE.CIRCLE].includes(layerType) &&
+        <ToolItem>
+          <Popover
+            content={<ChromePicker color={shapeInfo.borderColor} onChange={onBorderColorChange} />}
+            trigger="click"
+            placement="bottomLeft"
+          >
+            <ColorItem style={{ backgroundColor: shapeInfo.borderColor }} />
+          </Popover>
+        </ToolItem>
+      }
+
+      {/* 形状描边粗细 */}
+      {[LAYER_TYPE.RECT, LAYER_TYPE.CIRCLE].includes(layerType) &&
+        <ToolItem>
+          <Popover
+            content={
+              <Slider
+                value={shapeInfo.borderWidth}
+                min={0}
+                max={50}
+                step={1}
+                style={{ width: 180 }}
+                onChange={onBorderWidthChange}
+              />
+            }
+            trigger="click"
+            placement="bottomRight"
+          >
+            <img src={borderWidthIcon} width="24" height="24" alt="" />
+          </Popover>
+        </ToolItem>
+      }
+
+      {/* 形状边框样式 */}
+      {[LAYER_TYPE.RECT, LAYER_TYPE.CIRCLE].includes(layerType) &&
+        <ToolItem>
+          <Dropdown 
+            overlay={
+              <Menu style={{ width: 120 }}>
+                <Menu.Item
+                  key="1"
+                  style={{ padding: '20px 10px' }}
+                  onClick={() => onBorderStyleChange('solid')}
+                >
+                  <BorderSolid />
+                </Menu.Item>
+                <Menu.Item
+                  key="2"
+                  style={{ padding: '20px 10px' }}
+                  onClick={() => onBorderStyleChange('dashed')}
+                >
+                  <BorderDashed />
+                </Menu.Item>
+                <Menu.Item
+                  key="3"
+                  style={{ padding: '20px 10px' }}
+                  onClick={() => onBorderStyleChange('dotted')}
+                >
+                  <BorderDotted />
+                </Menu.Item>
+              </Menu>
+            }
+            trigger={['click']}
+          >
+            <img src={borderStyleIcon} width="24" height="24" alt="" />
+          </Dropdown>
+        </ToolItem>
+      }
+
       {/* 字体 */}
       {[LAYER_TYPE.TEXT].includes(layerType) &&
         <ToolItem>
@@ -370,7 +547,7 @@ export default observer(() => {
               <Menu style={{ width: 120 }}>
                 <Menu.Item
                   key="x"
-                  style={{ padding: '10px' }}
+                  style={{ padding: '20px' }}
                   icon={<SwapOutlined />}
                   onClick={() => onReverseImage('x')}
                 >
@@ -378,7 +555,7 @@ export default observer(() => {
                 </Menu.Item>
                 <Menu.Item
                   key="y"
-                  style={{ padding: '10px' }}
+                  style={{ padding: '20px' }}
                   icon={<SwapOutlined style={{ transform: 'rotate(90deg)' }} />}
                   onClick={() => onReverseImage('y')}
                 >
@@ -392,6 +569,7 @@ export default observer(() => {
           </Dropdown>
         </ToolItem>
       }
+      {/* 图片裁剪 */}
       {[LAYER_TYPE.IMAGE].includes(layerType) &&
         <ToolItem onClick={clipImage}>
           <span className="text">裁剪</span>
@@ -400,7 +578,7 @@ export default observer(() => {
     </ItemGroup>
     <ItemGroup className={isLocked ? 'locked' : ''}>
       {/* 图层层级 */}
-      {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT].includes(layerType) &&
+      {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT, LAYER_TYPE.RECT, LAYER_TYPE.CIRCLE].includes(layerType) &&
         <ToolItem>
           <Popover
             content={
@@ -420,7 +598,7 @@ export default observer(() => {
         </ToolItem>
       }
       {/* 透明度 */}
-      {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT].includes(layerType) &&
+      {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT, LAYER_TYPE.RECT, LAYER_TYPE.CIRCLE].includes(layerType) &&
         <ToolItem>
           <Popover
             content={
@@ -441,13 +619,13 @@ export default observer(() => {
         </ToolItem>
       }
       {/* 图层锁定 */}
-      {[LAYER_TYPE.TEXT, LAYER_TYPE.IMAGE].includes(layerType) &&
+      {[LAYER_TYPE.TEXT, LAYER_TYPE.IMAGE, LAYER_TYPE.RECT, LAYER_TYPE.CIRCLE].includes(layerType) &&
         <ToolItem className={["item-lock", isLocked ? 'active' : ''].join(' ')} onClick={onToggleLayerLock}>
           {isLocked ? <LockOutlined style={{ fontSize: 24 }} /> : <UnlockOutlined style={{ fontSize: 24 }} />}
         </ToolItem>
       }
       {/* 删除 */}
-      {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT].includes(layerType) &&
+      {[LAYER_TYPE.IMAGE, LAYER_TYPE.TEXT, LAYER_TYPE.RECT, LAYER_TYPE.CIRCLE].includes(layerType) &&
         <ToolItem onClick={onRemove}>
           <DeleteOutlined style={{ fontSize: 24 }} />
         </ToolItem>
@@ -523,4 +701,22 @@ const ColorItem = styled.div`
   height: 28px;
   border: 2px solid #666;
   border-radius: 4px;
+`
+
+const BorderSolid = styled.div`
+  width: 100%;
+  height: 0;
+  border-top: 4px solid #000;
+`
+
+const BorderDashed = styled.div`
+  width: 100%;
+  height: 0;
+  border-top: 4px dashed #000;
+`
+
+const BorderDotted = styled.div`
+  width: 100%;
+  height: 0;
+  border-top: 4px dotted #000;
 `
