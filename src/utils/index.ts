@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas-stroke2'
+import html2canvas from 'html2canvas'
 
 interface Coords {
   x: number;

@@ -19,7 +19,7 @@
     "@types/react-dom": "^17.0.0",
     "antd": "^4.17.2",
     "axios": "^0.24.0",
-    "html2canvas-stroke2": "^1.0.0-rc.7.3",
+    "html2canvas": "^1.4.0",
     "lodash": "^4.17.21",
     "mobx": "^6.3.8",
     "mobx-react": "^7.2.1",
