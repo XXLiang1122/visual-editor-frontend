@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 import { FONTSIZE_LIST } from 'utils/const'
 import { cloneDeep } from 'lodash'
 
-const { Option } = Select;
+const { Option } = Select
 
 // 文字大小
 export default observer(() => {

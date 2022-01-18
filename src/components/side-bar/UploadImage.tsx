@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
-import { templateStore } from 'store/template';
-import { Layer } from 'types';
-import { Button } from 'antd';
-import { observer } from 'mobx-react';
+import styled from '@emotion/styled'
+import { templateStore } from 'store/template'
+import { Button } from 'antd'
+import { observer } from 'mobx-react'
+import { createImage } from 'utils/createNewLayer'
 
 export default observer(() => {
   const { template, layers, addLayer, resetSelectStatus } = templateStore
@@ -25,46 +25,13 @@ export default observer(() => {
 
   // 使用图片
   const onUseImage = (width: number, height: number, url: string) => {
-    const newLayer: Layer = {
-      id: String(Date.now()),
-      type: 'image',
-      width: width,
-      height: height,
-      position: {
-        x: (template.global.width - width) / 2,
-        y: (template.global.height - height) / 2
-      },
-      rotate: 0,
-      reverse: {
-        x: 1,
-        y: 1
-      },
-      source: {
-        imageUrl: url
-      },
-      clip: {
-        width: width,
-        height: height,
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        pre: {
-          width: width,
-          height: height,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }
-      },
-      opacity: 1,
-      zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
-      isSelected: true,
-      isEditing: false,
-      isLocked: false,
-      scale: 1
+    const position = {
+      x: (template.global.width - width) / 2,
+      y: (template.global.height - height) / 2
     }
+    const zIndex = layers.length ? layers[layers.length - 1].zIndex + 1 : 1
+    const newLayer = createImage(width, height, url, position, zIndex)
+
     resetSelectStatus()
     addLayer(newLayer)
   }

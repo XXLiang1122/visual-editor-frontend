@@ -1,4 +1,4 @@
-import { MouseEvent as MouseEventType } from "react";
+import { MouseEvent as MouseEventType } from 'react'
 
 export class MouseEvents {
   constructor (e: MouseEventType<HTMLElement>, handleMove: (payload: any) => void, handleUp?: () => void) {

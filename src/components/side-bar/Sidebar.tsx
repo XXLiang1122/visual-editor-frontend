@@ -1,14 +1,14 @@
-import styled from "@emotion/styled";
-import { useState, useEffect } from "react";
-import { ImageItem as ImageInfo, SearchQuery } from "types/image";
-import { getImages } from "services/common";
-import { Collapse } from 'antd';
-import { FilterOutlined } from '@ant-design/icons';
-import { Popover, Input, Button } from 'antd';
+import styled from '@emotion/styled'
+import { useState, useEffect } from 'react'
+import { ImageItem as ImageInfo, SearchQuery } from 'types/image'
+import { getImages } from 'services/common'
+import { Collapse } from 'antd'
+import { FilterOutlined } from '@ant-design/icons'
+import { Popover, Input, Button } from 'antd'
 import ImageItem from './ImageItem'
 import TextItem from './TextItem'
 import { Rect, Circle } from './Shapes'
-import UploadImage from "./UploadImage";
+import UploadImage from './UploadImage'
 
 const { Panel } = Collapse
 const { Search } = Input

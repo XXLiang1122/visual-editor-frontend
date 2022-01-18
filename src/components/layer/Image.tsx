@@ -1,8 +1,8 @@
-import { observer } from 'mobx-react';
-import styled from "@emotion/styled";
-import { Layer } from 'types';
-import { templateStore } from 'store/template';
-import { MouseEvent } from 'react';
+import { observer } from 'mobx-react'
+import styled from '@emotion/styled'
+import { Layer } from 'types'
+import { templateStore } from 'store/template'
+import { MouseEvent } from 'react'
 
 export default observer(({ layer }: { layer: Layer }) => {
   const { setEditStatus } = templateStore

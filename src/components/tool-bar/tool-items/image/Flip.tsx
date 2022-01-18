@@ -1,9 +1,9 @@
-import { ToolItem } from '../style';
+import { ToolItem } from '../style'
 import { templateStore } from 'store/template'
-import { observer } from 'mobx-react';
-import { cloneDeep } from "lodash";
-import { Dropdown, Menu } from 'antd';
-import { SwapOutlined } from '@ant-design/icons';
+import { observer } from 'mobx-react'
+import { cloneDeep } from 'lodash'
+import { Dropdown, Menu } from 'antd'
+import { SwapOutlined } from '@ant-design/icons'
 
 // 图片翻转
 export default observer(() => {

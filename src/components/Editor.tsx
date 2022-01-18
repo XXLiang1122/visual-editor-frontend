@@ -1,14 +1,14 @@
-import React, { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
-import styled from "@emotion/styled";
-import Footer from "./Footer";
-import Canvas from "./Canvas";
-import ToolBar from "./tool-bar/Index"
-import { ScaleContext, BackgroundContext } from 'store/context';
-import { templateStore } from 'store/template';
-import { observer } from 'mobx-react';
+import React, { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
+import styled from '@emotion/styled'
+import Footer from './Footer'
+import Canvas from './Canvas'
+import ToolBar from './tool-bar/Index'
+import { ScaleContext, BackgroundContext } from 'store/context'
+import { templateStore } from 'store/template'
+import { observer } from 'mobx-react'
 import { Layer } from 'types'
-import { cloneDeep } from "lodash";
-import undoRedo from 'utils/undoRedo';
+import { cloneDeep } from 'lodash'
+import undoRedo from 'utils/undoRedo'
 
 const { undo, redo } = undoRedo()
 

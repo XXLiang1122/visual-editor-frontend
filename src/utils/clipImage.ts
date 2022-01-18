@@ -1,4 +1,4 @@
-import { Layer, POINT_TYPE } from 'types';
+import { Layer, POINT_TYPE } from 'types'
 
 // 计算处理图片裁剪
 export const clipImage = (layer: Layer, point: POINT_TYPE, oldWidth: number, oldHeight: number): Layer => {

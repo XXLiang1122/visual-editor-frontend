@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
+import styled from '@emotion/styled'
 import Logo from 'assets/logo.png'
 import { Button } from 'antd'
 import { getCoverImage } from 'utils'
-import { useState } from "react";
+import { useState } from 'react'
 
 export default function Nav () {
   const [loading, setLoading] = useState(false)

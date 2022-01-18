@@ -1,7 +1,7 @@
-import { useContext } from "react";
-import styled from "@emotion/styled";
-import { Layer } from 'types';
-import { ScaleContext } from 'store/context';
+import { useContext } from 'react'
+import styled from '@emotion/styled'
+import { Layer } from 'types'
+import { ScaleContext } from 'store/context'
 
 export default function HoverBorder ({ info }: { info: Layer; }) {
   const scale = useContext(ScaleContext)

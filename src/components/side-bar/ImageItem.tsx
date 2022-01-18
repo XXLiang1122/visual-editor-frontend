@@ -1,55 +1,22 @@
-import styled from "@emotion/styled";
-import { ImageItem as ImageInfo } from "types/image";
-import { templateStore } from 'store/template';
-import { Layer } from 'types';
-import { observer } from 'mobx-react';
+import styled from '@emotion/styled'
+import { ImageItem as ImageInfo } from 'types/image'
+import { templateStore } from 'store/template'
+import { observer } from 'mobx-react'
 import { DragEvent } from 'react'
+import { createImage } from 'utils/createNewLayer'
 
 export default observer(({ image }: { image: ImageInfo }) => {
   const { template, layers, addLayer, resetSelectStatus } = templateStore
 
   // 使用图片
   const onUseImage = () => {
-    const newLayer: Layer = {
-      id: String(Date.now()),
-      type: 'image',
-      width: image.webformatWidth,
-      height: image.webformatHeight,
-      position: {
-        x: (template.global.width - image.webformatWidth) / 2,
-        y: (template.global.height - image.webformatHeight) / 2
-      },
-      rotate: 0,
-      reverse: {
-        x: 1,
-        y: 1
-      },
-      source: {
-        imageUrl: image.webformatURL
-      },
-      clip: {
-        width: image.webformatWidth,
-        height: image.webformatHeight,
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        pre: {
-          width: image.webformatWidth,
-          height: image.webformatHeight,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }
-      },
-      opacity: 1,
-      zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
-      isSelected: true,
-      isEditing: false,
-      isLocked: false,
-      scale: 1
+    const position = {
+      x: (template.global.width - image.webformatWidth) / 2,
+      y: (template.global.height - image.webformatHeight) / 2
     }
+    const zIndex = layers.length ? layers[layers.length - 1].zIndex + 1 : 1
+    const newLayer = createImage(image.webformatWidth, image.webformatHeight, image.webformatURL, position, zIndex)
+
     resetSelectStatus()
     addLayer(newLayer)
   }
@@ -77,6 +44,27 @@ const Image = styled.div`
   background-color: #f0f1f4;
   overflow: hidden;
   flex-grow: 1;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #000;
+    opacity: 0;
+    transition: opacity 100ms;
+  }
+
+  &:hover::before {
+    opacity: .2;
+  }
+
+  &:active::before {
+    opacity: 0;
+  }
 
   img {
     min-width: 100%;

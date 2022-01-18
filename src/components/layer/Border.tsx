@@ -1,15 +1,15 @@
-import { Layer, POINT_TYPE, Coords } from 'types';
-import { MouseEvent, useContext, useState, useEffect, useCallback } from "react";
-import styled from "@emotion/styled";
-import { ScaleContext } from 'store/context';
-import { MouseEvents } from 'utils/mouseEvent';
+import { Layer, POINT_TYPE, Coords } from 'types'
+import { MouseEvent, useContext, useState, useEffect, useCallback } from 'react'
+import styled from '@emotion/styled'
+import { ScaleContext } from 'store/context'
+import { MouseEvents } from 'utils/mouseEvent'
 import { normalResize, rotateResize } from 'utils/resizeLayer'
 import { clipImage, updateImageClip } from 'utils/clipImage'
-import rotateIcon from 'assets/rotate.svg';
-import lockIcon from 'assets/lock.svg';
-import { templateStore } from 'store/template';
-import { cloneDeep } from 'lodash';
-import { observer } from 'mobx-react';
+import rotateIcon from 'assets/rotate.svg'
+import lockIcon from 'assets/lock.svg'
+import { templateStore } from 'store/template'
+import { cloneDeep } from 'lodash'
+import { observer } from 'mobx-react'
 
 // 初始的指针角度（左上、上、右上、右）
 const INIT_ANGLE = [0, 45, 90, 135]

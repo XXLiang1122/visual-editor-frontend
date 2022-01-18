@@ -1,14 +1,14 @@
-import 'quill/dist/quill.core.css';
-import 'quill/dist/quill.snow.css';
-import Quill from 'quill';
-import { observer } from 'mobx-react';
-import styled from "@emotion/styled";
-import { FontStyle } from 'types';
-import { Layer } from 'types';
-import { useCallback, useEffect, useRef, useState, useContext } from 'react';
-import { templateStore } from 'store/template';
-import { cloneDeep } from 'lodash';
-import { ScaleContext } from 'store/context';
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import Quill from 'quill'
+import { observer } from 'mobx-react'
+import styled from '@emotion/styled'
+import { FontStyle } from 'types'
+import { Layer } from 'types'
+import { useCallback, useEffect, useRef, useState, useContext } from 'react'
+import { templateStore } from 'store/template'
+import { cloneDeep } from 'lodash'
+import { ScaleContext } from 'store/context'
 
 export default observer(({ layer }: { layer: Layer }) => {
   const editorRef = useRef<HTMLDivElement>(null)

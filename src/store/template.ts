@@ -210,6 +210,10 @@ export const templateStore = observable({
   setCanUseRedo: action.bound
 })
 
+// 撤销重做
+const { init, pushHistory } = undoRedo()
+init(template)
+
 // 切换图层时重置文字编辑状态
 // 清空空文字图层
 reaction(
@@ -222,10 +226,6 @@ reaction(
     }
   }
 )
-
-// 撤销重做
-const { init, pushHistory } = undoRedo()
-init(template)
 
 // 保存到本地
 const save = () => {

@@ -1,15 +1,15 @@
-import { MouseEvent as MouseEventType, useContext } from "react";
-import { createPortal } from "react-dom";
-import styled from "@emotion/styled";
-import { Layer as LayerType } from 'types';
-import { ScaleContext, BackgroundContext } from 'store/context';
-import { MouseEvents } from 'utils/mouseEvent';
+import { MouseEvent as MouseEventType, useContext } from 'react'
+import { createPortal } from 'react-dom'
+import styled from '@emotion/styled'
+import { Layer as LayerType } from 'types'
+import { ScaleContext, BackgroundContext } from 'store/context'
+import { MouseEvents } from 'utils/mouseEvent'
 import { helpLine } from 'utils/helpLine'
-import Border from "./Border";
-import HoverBorder from "./HoverBorder";
-import { templateStore } from 'store/template';
-import { observer } from 'mobx-react';
-import { cloneDeep } from "lodash";
+import Border from './Border'
+import HoverBorder from './HoverBorder'
+import { templateStore } from 'store/template'
+import { observer } from 'mobx-react'
+import { cloneDeep } from 'lodash'
 
 // 图层
 export default observer(({ children, info }: { children: JSX.Element, info: LayerType }) => {

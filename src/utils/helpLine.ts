@@ -1,4 +1,4 @@
-import { Layer } from 'types';
+import { Layer } from 'types'
 
 interface Rect {
   x: number;

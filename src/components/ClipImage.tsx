@@ -1,15 +1,15 @@
-import { observer } from 'mobx-react';
-import styled from "@emotion/styled";
-import { Layer, POINT_TYPE, Coords } from 'types';
-import { templateStore } from 'store/template';
-import { ScaleContext } from 'store/context';
-import { MouseEvent, useContext, useEffect, useState } from 'react';
-import { MouseEvents } from 'utils/mouseEvent';
+import { observer } from 'mobx-react'
+import styled from '@emotion/styled'
+import { Layer, POINT_TYPE, Coords } from 'types'
+import { templateStore } from 'store/template'
+import { ScaleContext } from 'store/context'
+import { MouseEvent, useContext, useEffect, useState } from 'react'
+import { MouseEvents } from 'utils/mouseEvent'
 import { normalResize, rotateResize } from 'utils/resizeLayer'
 import resizeIcon from 'assets/resize.svg'
 import { cloneDeep } from 'lodash'
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { createPortal } from "react-dom";
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
+import { createPortal } from 'react-dom'
 
 let preLayer: Partial<Layer> = {}
 

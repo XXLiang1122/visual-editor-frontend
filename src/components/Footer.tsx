@@ -1,10 +1,10 @@
-import styled from "@emotion/styled";
-import { Slider } from "antd";
-import UndoIcon from "assets/undo.png";
-import RedoIcon from "assets/redo.png";
+import styled from '@emotion/styled'
+import { Slider } from 'antd'
+import UndoIcon from 'assets/undo.png'
+import RedoIcon from 'assets/redo.png'
 import undoRedo from 'utils/undoRedo'
 import { templateStore } from 'store/template'
-import { observer } from 'mobx-react';
+import { observer } from 'mobx-react'
 
 const { undo, redo } = undoRedo()
 

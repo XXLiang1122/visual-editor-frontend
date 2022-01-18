@@ -1,5 +1,5 @@
-import { Layer, POINT_TYPE, Coords } from 'types';
-import { getCenterCoords, calcRotatedCoords } from 'utils';
+import { Layer, POINT_TYPE, Coords } from 'types'
+import { getCenterCoords, calcRotatedCoords } from 'utils'
 
 const MIN_SIZE = {
   width: 10,

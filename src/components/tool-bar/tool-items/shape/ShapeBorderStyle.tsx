@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import { ToolItem } from '../style';
+import { ToolItem } from '../style'
 import { Dropdown, Menu } from 'antd'
 import { templateStore } from 'store/template'
 import { observer } from 'mobx-react'

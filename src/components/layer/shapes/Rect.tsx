@@ -1,6 +1,6 @@
-import { observer } from 'mobx-react';
-import styled from "@emotion/styled";
-import { Layer } from 'types';
+import { observer } from 'mobx-react'
+import styled from '@emotion/styled'
+import { Layer } from 'types'
 
 export default observer(({ layer }: { layer: Layer }) => {
   return <Rect style={{

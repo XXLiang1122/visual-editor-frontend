@@ -1,7 +1,7 @@
-import React from "react";
-import styled from "@emotion/styled";
-import Sidebar from "./side-bar/Sidebar";
-import Editor from "./Editor";
+import React from 'react'
+import styled from '@emotion/styled'
+import Sidebar from './side-bar/Sidebar'
+import Editor from './Editor'
 
 export default function Main () {
   return <MainBody>

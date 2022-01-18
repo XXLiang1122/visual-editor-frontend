@@ -1,18 +1,19 @@
-import React, { useContext, MouseEvent, DragEvent } from "react";
-import styled from "@emotion/styled";
-import { ScaleContext, BackgroundContext } from 'store/context';
-import Layer from './layer/Layer';
-import { LAYER_TYPE, Layer as LayerType } from 'types'
-import { ImageItem } from "types/image";
-import { templateStore } from 'store/template';
-import { observer } from 'mobx-react';
-import { toJS } from 'mobx';
-import TextEditor from './layer/TextEditor';
+import React, { useContext, MouseEvent, DragEvent } from 'react'
+import styled from '@emotion/styled'
+import { ScaleContext, BackgroundContext } from 'store/context'
+import Layer from './layer/Layer'
+import { LAYER_TYPE } from 'types'
+import { ImageItem } from 'types/image'
+import { templateStore } from 'store/template'
+import { observer } from 'mobx-react'
+import { toJS } from 'mobx'
+import TextEditor from './layer/TextEditor'
 import ImageLayer from './layer/Image'
-import ClipImage from "./ClipImage";
+import ClipImage from './ClipImage'
 import Rect from './layer/shapes/Rect'
 import Circle from './layer/shapes/Circle'
-import { createPortal } from "react-dom";
+import { createPortal } from 'react-dom'
+import { createImage, createRect, createCircle } from 'utils/createNewLayer'
 
 interface Props {
   width: number;
@@ -45,53 +46,47 @@ export default observer(() => {
     setLayerType(LAYER_TYPE.BACKGROUND)
   }
 
-  // 图片拖拽释放
+  // 拖拽释放
   const onDropCapture = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()
-    const onUseImage = (width: number, height: number, url: string) => {
+    const getPosition = (width: number, height: number) => {
       const canvasRect = (document.querySelector('#layerControl') as HTMLElement)?.getBoundingClientRect()
       const x = dragCursorPosition.x - canvasRect.left
       const y = dragCursorPosition.y - canvasRect.top
-      const newLayer: LayerType = {
-        id: String(Date.now()),
-        type: 'image',
-        width: width,
-        height: height,
-        position: {
-          x: x / scale - width / 2,
-          y: y / scale - height / 2
-        },
-        rotate: 0,
-        reverse: {
-          x: 1,
-          y: 1
-        },
-        source: {
-          imageUrl: url
-        },
-        clip: {
-          width: width,
-          height: height,
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          pre: {
-            width: width,
-            height: height,
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }
-        },
-        opacity: 1,
-        zIndex: layers.length ? layers[layers.length - 1].zIndex + 1 : 1,
-        isSelected: true,
-        isEditing: false,
-        isLocked: false,
-        scale: 1
+      return {
+        x: x / scale - width / 2,
+        y: y / scale - height / 2
       }
+    }
+    // 使用图片
+    const onUseImage = (width: number, height: number, url: string) => {
+      const position = getPosition(width, height)
+      const zIndex = layers.length ? layers[layers.length - 1].zIndex + 1 : 1
+      const newLayer = createImage(width, height, url, position, zIndex)
+      resetSelectStatus()
+      addLayer(newLayer)
+    }
+    // 使用矩形
+    const onUseRect = () => {
+      const size = {
+        width: 200,
+        height: 200
+      }
+      const position = getPosition(size.width, size.height)
+      const zIndex = layers.length ? layers[layers.length - 1].zIndex + 1 : 1
+      const newLayer = createRect(size.width, size.height, position, zIndex)
+      resetSelectStatus()
+      addLayer(newLayer)
+    }
+    // 使用圆形
+    const onUseCircle = () => {
+      const size = {
+        width: 200,
+        height: 200
+      }
+      const position = getPosition(size.width, size.height)
+      const zIndex = layers.length ? layers[layers.length - 1].zIndex + 1 : 1
+      const newLayer = createCircle(size.width, size.height, position, zIndex)
       resetSelectStatus()
       addLayer(newLayer)
     }
@@ -112,14 +107,27 @@ export default observer(() => {
           }
         }
       }
-    } else { // 侧边栏图片
+    } else {
+      // 侧边栏图片
       let image: ImageItem | null = null
-      try {
-        image = JSON.parse(e.dataTransfer?.getData('image'))
-      } catch (e) {}
+      if (e.dataTransfer?.getData('image')) {
+        try {
+          image = JSON.parse(e.dataTransfer?.getData('image'))
+        } catch (e) { console.log(e) }
+      }
       // 使用图片
       if (image) {
         onUseImage(image.webformatWidth, image.webformatHeight, image.webformatURL)
+      }
+      // 使用矩形
+      const isRect = !!e.dataTransfer?.getData('rect')
+      if (isRect) {
+        onUseRect()
+      }
+      // 使用圆形
+      const isCircle = !!e.dataTransfer?.getData('circle')
+      if (isCircle) {
+        onUseCircle()
       }
     }
   }
@@ -191,7 +199,7 @@ export default observer(() => {
   </Wrapper>
 })
 
-// 传送门
+// 文字传送门
 function TransportEditor ({ children }: { children: JSX.Element }) {
   return createPortal(
     children,
@@ -199,7 +207,7 @@ function TransportEditor ({ children }: { children: JSX.Element }) {
   )
 }
 
-// 传送门
+// 图片传送门
 function TransportImage ({ children }: { children: JSX.Element }) {
   return createPortal(
     children,
