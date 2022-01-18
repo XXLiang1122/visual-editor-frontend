@@ -4,11 +4,12 @@ import { ImageItem as ImageInfo, SearchQuery } from 'types/image'
 import { getImages } from 'services/common'
 import { Collapse } from 'antd'
 import { FilterOutlined } from '@ant-design/icons'
-import { Popover, Input, Button } from 'antd'
+import { Popover, Input, Button, Empty } from 'antd'
 import ImageItem from './ImageItem'
 import TextItem from './TextItem'
 import { Rect, Circle } from './Shapes'
 import UploadImage from './UploadImage'
+import { isArray } from 'lodash'
 
 const { Panel } = Collapse
 const { Search } = Input
@@ -30,6 +31,8 @@ export default function Sidebar () {
   })
 
   const [showFilter, setShowFilter] = useState(false)
+
+  const [activeKey, setActiveKey] = useState<string | string[]>(['1'])
 
   useEffect(() => {
     getImages(query).then((data: any) => {
@@ -54,6 +57,10 @@ export default function Sidebar () {
     }))
   }
 
+  const onPanelChange = (key: string[] | string) => {
+    setActiveKey(key)
+  }
+
   // 图片筛选面板
   const FilterPanel = () => {
     const onSearch = (val: string, e: any) => {
@@ -64,6 +71,16 @@ export default function Sidebar () {
           q: val,
           page: 1
         }))
+
+        if (!activeKey.includes('1')) {
+          setActiveKey(keys => {
+            let val = keys
+            if (isArray(keys)) {
+              val = [...keys, '1']
+            }
+            return val
+          })
+        }
       }
     }
 
@@ -73,32 +90,35 @@ export default function Sidebar () {
       </>
     }
 
-    return <Popover
-      content={Content}
-      title="筛选"
-      trigger="click"
-      visible={showFilter}
-      onVisibleChange={visible => setShowFilter(visible)}
-    >
-      <FilterOutlined onClick={(e) => { e.stopPropagation(); setShowFilter(true) }} />
-    </Popover>
+    return <div onClick={e => { e.stopPropagation() }}>
+      <Popover
+        content={Content}
+        title="筛选"
+        trigger="click"
+        visible={showFilter}
+        onVisibleChange={visible => setShowFilter(visible)}
+      >
+        <FilterOutlined onClick={(e) => { e.stopPropagation(); setShowFilter(true) }} />
+      </Popover>
+    </div>
   }
 
   return <Side>
-    <Collapse defaultActiveKey={['1']} collapsible="header">
-      <Panel header={<div style={{ width: '300px' }}>图片</div>} key="1" extra={FilterPanel()}>
+    <Collapse activeKey={activeKey} onChange={onPanelChange}>
+      <Panel header="图片" key="1" extra={FilterPanel()}>
         <ListContent>
           <UploadImage />
           {list.map(image => <ImageItem key={image.id} image={image} />)}
-          <Button style={{ width: '100%', marginTop: '20px' }} onClick={onLoadMore}>加载更多</Button>
+          {list.length < 1 && <Empty style={{ width: '100%', margin: '20px auto' }} />}
+          {list.length > 0 && <Button style={{ width: '100%', marginTop: '20px' }} onClick={onLoadMore}>加载更多</Button>}
       </ListContent>
       </Panel>
-      <Panel header={<div style={{ width: '300px' }}>文字</div>} key="2">
+      <Panel header="文字" key="2">
         <ListContent>
           <TextItem />
         </ListContent>
       </Panel>
-      <Panel header={<div style={{ width: '300px' }}>形状</div>} key="3">
+      <Panel header="形状" key="3">
         <ListContent>
           <Rect />
           <Circle />
