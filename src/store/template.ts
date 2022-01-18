@@ -30,6 +30,10 @@ export const templateStore = observable({
     return this.template.layers
   },
 
+  get activeLayer (): Layer | undefined {
+    return this.layers.find(l => l.isSelected)
+  },
+
   // 获取最新的模板
   getTemplate () {
     const _template = cloneDeep(templateStore.template)
@@ -74,11 +78,7 @@ export const templateStore = observable({
   // 新增单个图层
   addLayer (layer: Layer) {
     this.layers.push(layer)
-    if (layer.type === 'image') {
-      this.setLayerType(LAYER_TYPE.IMAGE)
-    } else if (layer.type === 'text') {
-      this.setLayerType(LAYER_TYPE.TEXT)
-    }
+    this.updateLayerType(layer)
   },
 
   // 移除单个图层
@@ -103,12 +103,7 @@ export const templateStore = observable({
     this.layers.forEach(layer => {
       layer.isSelected = layer.id === id
       if (layer.isSelected) {
-        switch (layer.type) {
-          case 'image': this.setLayerType(LAYER_TYPE.IMAGE); break;
-          case 'text': this.setLayerType(LAYER_TYPE.TEXT); break;
-          case 'rect': this.setLayerType(LAYER_TYPE.RECT); break;
-          case 'circle': this.setLayerType(LAYER_TYPE.CIRCLE); break;
-        }
+        this.updateLayerType(layer)
       }
     })
     // 隐藏一些下拉组件
@@ -120,6 +115,16 @@ export const templateStore = observable({
     this.layers.forEach(layer => {
       layer.isHover = id ? layer.id === id : false
     })
+  },
+
+  // 更新图层类型
+  updateLayerType (layer: Layer) {
+    switch (layer.type) {
+      case 'image': this.setLayerType(LAYER_TYPE.IMAGE); break;
+      case 'text': this.setLayerType(LAYER_TYPE.TEXT); break;
+      case 'rect': this.setLayerType(LAYER_TYPE.RECT); break;
+      case 'circle': this.setLayerType(LAYER_TYPE.CIRCLE); break;
+    }
   },
 
   // 设置当前选择的图层类型
@@ -192,6 +197,7 @@ export const templateStore = observable({
   selectLayer: action.bound,
   setLayerLevel: action.bound,
   hoverLayer: action.bound,
+  updateLayerType: action.bound,
   setLayerType: action.bound,
   setEditStatus: action.bound,
   setLayerLock: action.bound,

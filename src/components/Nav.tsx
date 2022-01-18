@@ -21,7 +21,7 @@ export default function Nav () {
   }
 
   return <Header>
-    <Img src={Logo} />
+    <a href="https://github.com/XXLiang1122/visual-editor"><Img src={Logo} /></a>
     <Button loading={loading} type="primary" onClick={exportImage}>导出图片</Button>
   </Header>
 }
@@ -40,4 +40,5 @@ const Img = styled.img`
   width: 48px;
   height: 48px;
   object-fit: cover;
+  cursor: pointer;
 `
