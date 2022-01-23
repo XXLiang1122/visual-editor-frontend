@@ -1,8 +1,12 @@
-# 可视化编辑器 demo（react + mobx）
+# 可视化编辑器 demo
 
-### [预览demo](https://xxliang1122.github.io/visual-editor/build)  
+> 基于 `react` + `mobx`  
+> 接口仓库地址：https://github.com/XXLiang1122/visual-editor-backend
 
---- 
+&nbsp;
+### [<b>👉 预览静态demo</b>](https://xxliang1122.github.io/visual-editor-frontend/build)  
+
+&nbsp;
 
 **已实现功能点**
 - 画布 
@@ -45,3 +49,12 @@
 **待实现**
 - 画布缩放焦点不变
 - 图层组合/拆分
+  
+&nbsp;  
+# Development
+
+```bash
+git clone git@github.com:XXLiang1122/visual-editor-frontend.git
+npm install
+npm run start
+```
