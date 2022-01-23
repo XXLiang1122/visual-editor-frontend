@@ -1,6 +1,6 @@
-# 可视化编辑器 demo（react + mobx）
+# 纯静态页面分支
 
-### [预览demo](https://xxliang1122.github.io/visual-editor/build)  
+### [预览静态demo](https://xxliang1122.github.io/visual-editor-frontend/build)  
 
 --- 
 
