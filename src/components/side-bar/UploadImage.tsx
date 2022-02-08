@@ -3,24 +3,35 @@ import { templateStore } from 'store/template'
 import { Button } from 'antd'
 import { observer } from 'mobx-react'
 import { createImage } from 'utils/createNewLayer'
+import { upload } from 'services/upload'
 
 export default observer(() => {
   const { template, layers, addLayer, resetSelectStatus } = templateStore
 
   // 选择图片
   const uploadImage = (e: any) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(e.target.files[0])
-    reader.onload = el => {
-      const url = el.target?.result
-      if (typeof url === 'string') {
-        const img = new Image()
-        img.src = url
-        img.onload = () => {
-          onUseImage(img.width, img.height, url)
-        }
+    // const reader = new FileReader()
+    // reader.readAsDataURL(e.target.files[0])
+    // reader.onload = el => {
+    //   const url = el.target?.result
+    //   if (typeof url === 'string') {
+    //     const img = new Image()
+    //     img.src = url
+    //     img.onload = () => {
+    //       onUseImage(img.width, img.height, url)
+    //     }
+    //   }
+    // }
+    const file = e.target.files[0]
+    const formData = new FormData()
+    formData.append('file', file)
+    upload<{url: string}>(formData).then(({ data }) => {
+      const img = new Image()
+      img.src = data.url
+      img.onload = () => {
+        onUseImage(img.width, img.height, data.url)
       }
-    }
+    })
   }
 
   // 使用图片

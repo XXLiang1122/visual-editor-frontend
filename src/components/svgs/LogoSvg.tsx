@@ -1,7 +1,7 @@
 import styled from '@emotion/styled'
 import { useEffect, useRef } from 'react'
 
-export default function SvgAni () {
+export default function LogoSvg () {
   const pathRefs = useRef<SVGSVGElement>(null)
 
   useEffect(() => {

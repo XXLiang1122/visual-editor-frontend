@@ -1,0 +1,57 @@
+@keyframes dash1 {
+  50% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes dash2 {
+  50% {
+    stroke-dashoffset: 300;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes bounce {
+  to {
+    transform: translate(8px, -50%);
+  }
+}
+
+.slide-right-enter {
+  opacity: .5;
+  transform: translate(-200%, -50%) !important;
+}
+.slide-right-enter-active {
+  opacity: 1;
+  transform: translate(-50%, -50%) !important;
+  transition: opacity 500ms, transform 500ms;
+}
+.slide-right-exit {
+  opacity: 1;
+}
+.slide-right-exit-active {
+  opacity: .5;
+  transform: translate(-200%, -50%) !important;
+  transition: opacity 500ms, transform 500ms;
+}
+
+.slide-left-enter {
+  opacity: .5;
+  transform: translate(100%, -50%) !important;
+}
+.slide-left-enter-active {
+  opacity: 1;
+  transform: translate(-50%, -50%) !important;
+  transition: opacity 500ms, transform 500ms;
+}
+.slide-left-exit {
+  opacity: 1;
+}
+.slide-left-exit-active {
+  opacity: .5;
+  transform: translate(100%, -50%) !important;
+  transition: opacity 500ms, transform 500ms;
+}

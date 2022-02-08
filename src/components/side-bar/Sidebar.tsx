@@ -1,7 +1,7 @@
 import styled from '@emotion/styled'
 import { useState, useEffect } from 'react'
 import { ImageItem as ImageInfo, SearchQuery } from 'types/image'
-import { getImages } from 'services/common'
+import { getImages } from 'services/images'
 import { Collapse } from 'antd'
 import { FilterOutlined } from '@ant-design/icons'
 import { Popover, Input, Button, Empty } from 'antd'

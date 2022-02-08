@@ -90,7 +90,7 @@ export const createRect = (width: number = 200, height: number = 200, position: 
     rotate: 0,
     opacity: 1,
     rectInfo: {
-      fill: '#fff',
+      fill: 'rgba(0,0,0,0)',
       borderWidth: 6,
       borderColor: '#000',
       borderStyle: 'solid'
@@ -114,7 +114,7 @@ export const createCircle = (width: number = 200, height: number = 200, position
     rotate: 0,
     opacity: 1,
     circleInfo: {
-      fill: '#fff',
+      fill: 'rgba(0,0,0,0)',
       borderWidth: 6,
       borderColor: '#000',
       borderStyle: 'solid'

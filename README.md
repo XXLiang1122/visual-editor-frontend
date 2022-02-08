@@ -1,6 +1,6 @@
 # 可视化编辑器 demo
 
-> 基于 `react` + `mobx`  
+> 基于 `react` + `mobx` + `antd`  
 > 接口仓库地址：https://github.com/XXLiang1122/visual-editor-backend
 
 &nbsp;

@@ -8,10 +8,17 @@ let template: TemplateInfo = Object.assign(defaultTemplate, {
   layers: defaultTemplate.layers.map(layer => { return {...layer, isSelected: false, isEditing: false, isHover: false, isLocked: false, scale: 1} })
 })
 
-const localTemplateCache = localStorage.getItem('TEMPLATE')
-if (localTemplateCache) {
-  template = JSON.parse(localTemplateCache)
+// 初始化模板
+export const initTemplate = (tpl: TemplateInfo) => {
+  templateStore.setTemplate(Object.assign(tpl, {
+    layers: tpl.layers.map(layer => { return {...layer, isSelected: false, isEditing: false, isHover: false, scale: 1} })
+  }))
 }
+
+// const localTemplateCache = localStorage.getItem('TEMPLATE')
+// if (localTemplateCache) {
+//   template = JSON.parse(localTemplateCache)
+// }
 
 // 模板store
 export const templateStore = observable({
@@ -43,6 +50,7 @@ export const templateStore = observable({
       }
       delete l.isSelected
       delete l.isEditing
+      delete l.isHover
       delete l.scale
       // @ts-ignore
       delete l.clip?.pre
@@ -228,16 +236,16 @@ reaction(
 )
 
 // 保存到本地
-const save = () => {
-  const template = cloneDeep(templateStore.template)
-  template.layers = template.layers.map(l => {
-    l.isSelected = false
-    l.isEditing = false
-    l.isHover = false
-    return l
-  })
-  localStorage.setItem('TEMPLATE', JSON.stringify(template))
-}
+// const save = () => {
+//   const template = cloneDeep(templateStore.template)
+//   template.layers = template.layers.map(l => {
+//     l.isSelected = false
+//     l.isEditing = false
+//     l.isHover = false
+//     return l
+//   })
+//   localStorage.setItem('TEMPLATE', JSON.stringify(template))
+// }
 
 // 侦听保存
 reaction(
@@ -251,7 +259,7 @@ reaction(
     })
     return JSON.stringify(template)
   },
-  () => { save(); pushHistory() },
+  () => { /** save(); */ pushHistory() },
   {
     delay: 500
   }
